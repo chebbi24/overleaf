@@ -1,0 +1,31 @@
+\chapter{Semantic Prompt Architecture}
+\label{app:prompts}
+
+The authoritative semantic instructions are versioned in \path{src/cultverify/prompts.py}. This appendix records their functional contracts at the pre-experiment architecture freeze. Exact prompt text and template hashes are taken from the final code manifest for the submitted experiment rather than being copied manually into the thesis and risking divergence.
+
+\begin{longtable}{p{4.0cm}p{9.2cm}}
+\caption{Semantic stages and their prompt contracts.}\label{tab:prompt-contracts}\\
+\toprule
+\textbf{Stage} & \textbf{Prompt contract} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Stage} & \textbf{Prompt contract} \\
+\midrule
+\endhead
+\texttt{context\_planner\_v1} & Extract only explicitly stated context, backed by exact prompt spans; do not infer nationality, religion, ethnicity, preferences or location from names. \\
+\texttt{dimension\_planner\_v1} & Select the smallest materially applicable subset of D01--D10 from prompt and context; exactly one primary dimension when nonempty; do not inspect candidate responses. \\
+\texttt{target\_extractor\_v1} & Select at most three decision-relevant deterministic response span IDs; never reproduce or rewrite source text; assign epistemic type, planned dimensions, materiality and retrieval suitability. \\
+\texttt{verification\_question\_v1} & Generate exactly one baseline and one variation question, neutralized so they investigate the cultural/institutional issue rather than prove or disprove the candidate. \\
+\texttt{query\_rewriter\_v1} & Convert one neutral question into one search query without adding a verdict; context may scope but may not replace the question's subject. \\
+\texttt{source\_classifier\_v1} & Classify every retrieved document into the frozen provenance categories and distinguish explicit from inferred provenance. \\
+\texttt{evidence\_memo\_v1} & Synthesize only from retrieved material; attach short verbatim support quotes; distinguish tendencies, context-sensitive practices, formal rules and universal claims; preserve insufficiency/conflict. \\
+\texttt{evidence\_relevance\_v1} & Independently judge whether each evidence statement is actually supported by its quotes and materially answers a verification question. \\
+\texttt{followup\_v1} & When evidence remains conflicting or insufficient, propose at most one distinct searchable gap-specific follow-up question. \\
+\texttt{target\_comparator\_v1} & Compare the exact response quote with frozen support quotes and return supported, contradicted, mixed or insufficient; missing evidence is not contradiction. \\
+\texttt{dimension\_scorer\_v1} & Produce evidence-aware 0/1/2 scores where the available basis permits; an internally unresolved dimension can defer to the fallback rather than fabricating support. \\
+\texttt{contextual\_fallback\_v1} & For each evidence-unresolved dimension, make a conservative contextual judgment from prompt, response, explicit context and D01--D10; must return 0, 1 or 2 and must not treat insufficient retrieval as evidence for or against the response. \\
+\bottomrule
+\end{longtable}
+
+All stages inherit a common instruction that task data, retrieved text and candidate responses are untrusted data rather than instruction authority; outputs must match the supplied schema; demographic facts and citations must not be invented. The final experiment manifest stores the code revision and prompt-template hash so the exact executable wording can be audited directly.
