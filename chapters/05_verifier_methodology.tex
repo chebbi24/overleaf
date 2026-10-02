@@ -1,0 +1,154 @@
+\chapter{The Proposed Vericult Framework}
+\label{ch:verifier}
+
+The previous chapter operationalized cultural appropriateness as a multidimensional and context-sensitive construct. This chapter defines the architecture used to evaluate one generated response against that construct. Vericult is a standalone post-hoc verifier: it receives only a prompt and response at its public single-response interface and does not consume reward-model scores, human labels, benchmark answers or expected-error annotations.
+
+The final architecture separates three functions that are often conflated in automated evaluation: identifying what is culturally material in the response, acquiring evidence about externally checkable claims, and making the final rubric-based cultural judgment. The central control flow is:
+\[
+\begin{aligned}
+\text{prompt} &\rightarrow \text{context} \rightarrow \text{dimension plan} \rightarrow \text{response spans}\\
+&\rightarrow \text{material targets} \rightarrow \text{neutral questions} \rightarrow \text{candidate-blind evidence}\\
+&\rightarrow \text{frozen memo} \rightarrow \text{target verdicts} \rightarrow \text{dimension scoring}\\
+&\rightarrow \text{contextual fallback when required} \rightarrow \text{aggregate score and label}.
+\end{aligned}
+\]
+
+\section{Design Objectives}
+
+Vericult is guided by eight objectives. First, it must remain independent of the comparison systems used in the experiments. Second, cultural interpretation must be context-sensitive rather than inferred from names or demographic stereotypes. Third, the architecture must distinguish retrievable facts and descriptive norms from contextual, internal or value-laden judgments. Fourth, evidence acquisition should be separated from candidate wording as far as possible. Fifth, search must be bounded, source-aware and reproducible. Sixth, the system must preserve uncertainty without converting missing evidence into a fourth user-facing cultural class. Seventh, technical failure must remain distinct from semantic uncertainty. Eighth, every completed judgment should be reconstructable from an execution trace.
+
+The sixth objective is important because the implementation evolved during engineering validation. An earlier design used \texttt{insufficient\_evidence} as a completed candidate label when no applicable dimension could be scored. This was conservative but poorly matched the intended use case: a user asks whether a concrete answer is culturally appropriate, partially appropriate or inappropriate. The final architecture therefore retains evidence insufficiency internally and introduces an explicit contextual fallback stage. A completed verification must end with a numeric 0/1/2 judgment for every planned dimension. A genuinely broken pipeline remains \texttt{status=failed} and is never silently transformed into a cultural score.
+
+\section{Semantic Backbone and Model Separation}
+
+All semantic stages use one explicitly configured backbone model. The pipeline rejects configuration mismatch between the model adapter and verifier configuration, preventing hidden stage-specific model substitution. The same model therefore performs context extraction, dimension planning, target selection, verification-question generation, query rewriting, source classification, memo synthesis, follow-up planning, target comparison, evidence-grounded dimension scoring and contextual fallback.
+
+The architecture is frozen separately from the final semantic backbone. This separation is deliberate: architecture selection is a methodological design decision, while backbone selection is an empirical engineering choice. The final backbone is selected on development data under a fixed architecture and then frozen before confirmatory v2 and external evaluations. Candidate-generation models are separate from the verifier backbone and are never used as evidence about Vericult's correctness.
+
+Semantic calls are stateless. Each request contains a fresh system instruction and serialized payload. Outputs are validated against closed Pydantic schemas. One bounded semantic repair retry and separately bounded transport retries are permitted. Python validates structure, exact spans, identifier ownership, evidence links and budgets; it does not hard-code culturally correct answers.
+
+\section{Prompt Context Extraction}
+
+The first stage extracts a \texttt{ContextFrame} from the prompt containing setting, participants, relationships, explicit location, temporal context, explicit constraints and user goal. Each retained contextual fact includes an exact \texttt{prompt\_span}. The validator requires that the span occur verbatim in the original prompt. The prompt instruction explicitly prohibits inferring religion, nationality, ethnicity, preferences or location from names.
+
+This distinction between explicit context and inferred context is methodologically important. Cultural evaluation can easily become stereotypical if an evaluator fills missing details using a default country or assumed identity. Vericult instead prefers missing context to fabricated context. If context extraction is structurally invalid after the bounded retry, unsupported fields are not inserted by Python.
+
+\section{Prompt-Level D01--D10 Planning}
+
+The dimension planner receives the prompt, validated context frame and complete D01--D10 rubric. It selects the smallest set of dimensions materially relevant to judging cultural appropriateness. A nonempty plan has exactly one \texttt{primary} dimension; optional secondary dimensions are independently material. Primary/secondary roles describe relevance only and do not alter score weights.
+
+In Best-of-4 mode, context extraction and dimension planning are performed once from the shared prompt before any candidate is evaluated. All four candidates therefore use the same prompt-level frame. This design improves comparability and prevents a candidate from receiving a different rubric merely because its wording makes another cultural topic salient. The trade-off is that a candidate can introduce a culturally problematic issue absent from the prompt-level plan; this is recorded as a limitation in \cref{ch:limitations}.
+
+\section{Deterministic Response Spans and Material Targets}
+
+A central engineering failure discovered during the first LIVE stress run concerned exact quotation. The initial target extractor asked the language model both to identify a material cultural unit and reproduce its exact response quotation. The model often selected the correct semantic content but altered punctuation, Markdown or wording, causing strict quote validation to reject the complete target batch. This was a mechanical copying problem rather than evidence that the selected cultural issue was wrong.
+
+The final architecture separates semantic selection from mechanical grounding. Python first splits the candidate response deterministically into stable response spans \texttt{S001}, \texttt{S002}, and so forth, preserving exact source text. The target extractor sees these spans and returns only a \texttt{span\_id}, proposition, epistemic type, dimension IDs, materiality and retrieval flag. Python then attaches the exact span text as \texttt{response\_quote}. This preserves the invariant that every target quote occurs verbatim in the candidate while removing byte-for-byte copying from the LLM's responsibility.
+
+At most three material targets are retained. Targets are intended to capture decision-relevant content rather than every sentence. Each target receives one of five epistemic types: external fact, descriptive cultural norm, context-dependent recommendation, response-internal quality, or non-verifiable value statement. External facts, descriptive norms and context-dependent recommendations are retrieval-appropriate; internal qualities and non-verifiable values are handled without external retrieval.
+
+\section{Neutral Verification Questions}
+
+Each retrieval-appropriate target produces exactly two initial verification questions: a baseline/descriptive question and a variation/scope question. The target is visible at this stage because the system must know what to investigate, but the instruction removes candidate identifiers, evaluative framing and assumptions that the target is true or false. Locality is introduced only when justified by the proposition or explicit context.
+
+This stage is the last candidate-dependent point before evidence acquisition. Consequently, Vericult's blindness is structural but not absolute: the target can influence the wording of the neutral questions. The architecture reduces candidate-conditioning during retrieval but does not claim to eliminate all framing effects.
+
+\section{Candidate-Blind Evidence Acquisition}
+
+After question generation, the evidence engine receives only the neutral verification questions and explicit context. Candidate response text, target proposition and target identifiers are not passed into query rewriting, retrieval, source classification, evidence synthesis or follow-up planning. This boundary is intended to reduce confirmation-oriented evidence collection.
+
+Each neutral question is rewritten into one search query. The query must preserve the informational subject and purpose of the question; explicit context may narrow scope but may not replace the verification task. Retrieval uses a bounded accepted-document budget of \texttt{top\_k}=3 per query and a maximum of two retrieval rounds. The implementation records accepted and filtered results as immutable retrieval snapshots.
+
+\section{Leakage and Source Controls}
+
+The retriever applies explicit repository, domain and path exclusions to reduce benchmark and annotation contamination. The project repository itself is excluded. Annotation, result, human-label, silver-label and provisional-annotation paths are filtered. External-validation runs additionally exclude the official source repository or domain of the benchmark being evaluated.
+
+Retrieved documents are classified into source categories: official/legal, academic/peer-reviewed, statistical survey, institutional/professional, community/insider, general explanatory, commercial/lifestyle, or unknown. Classification includes a provenance basis. Strong provenance classes require explicit evidence that the retrieved issuer actually belongs to that class; a hosting platform or formal writing style is not enough.
+
+Source type is not converted into a universal authority score. Legal questions should favor primary institutional evidence, linguistic questions can require scholarly or specialist evidence, and lived practice can legitimately require community sources. The role of classification is to preserve provenance and help the evidence memo calibrate the strength of its claims.
+
+\section{Evidence Memo and Bounded Follow-Up}
+
+The candidate-blind evidence memo answers the verification questions using only retrieved documents. It records scope, variation, agreement, sufficiency and confidence, together with at most five grounded evidence statements. Each support quote must be a short verbatim span from exactly one supplied document. Python maps the quote to the frozen document identifier and derives the citation union deterministically.
+
+If the initial evidence is conflicting or insufficient, one additional follow-up question may be generated for the single most important unresolved searchable gap. This yields at most two retrieval rounds and prevents open-ended search until the evaluator is satisfied. If the follow-up is invalid, duplicative or not useful, the current memo remains final rather than expanding the search budget.
+
+The bounded search policy is a methodological compromise. More searching could improve coverage in some cases but would also increase cost, temporal instability and the risk that the system keeps searching until it finds evidence supporting a desired conclusion. A fixed budget is easier to reproduce and audit.
+
+\section{Evidence Freezing and Target Comparison}
+
+Once the final memo for a target is created, it is frozen. The target is then reintroduced and compared only against the frozen exact-support evidence. The target comparator returns \texttt{supported}, \texttt{contradicted}, \texttt{mixed}, or \texttt{insufficient}. Missing evidence is explicitly not contradiction.
+
+This ordering is important. Evidence is gathered before the system is asked to decide whether the candidate's exact target is correct. The memo hash is checked before and after target comparison so the comparison stage cannot rewrite its own evidence.
+
+A target verdict is deliberately narrower than a dimension score. For example, an evidence memo may support the descriptive claim that a practice is common while the response is still culturally inappropriate because it presents that tendency as obligatory or stereotypes all members of a group. Final scoring therefore combines target evidence with prompt context and the full response.
+
+\section{Evidence-Grounded Dimension Scoring}
+
+The dimension scorer operates over the full prompt and response, explicit context, applicable dimensions, material targets, structured target verdicts, frozen evidence groups and D01--D10 rubric. Dimension scores are 0, 1 or 2 under the anchors defined in \cref{ch:framework}. The evidence-grounded scorer may internally abstain only when the supplied basis does not support a defensible judgment. A directional target verdict requires a numeric score.
+
+Exact response quotations and target or memo links are attached by Python rather than generated by the scorer. This mirrors the deterministic target-grounding fix: semantic reasoning remains model-based, while mechanical provenance is owned by code.
+
+The scorer is instructed not to translate target verdicts mechanically into cultural scores. A supported factual target is not automatically culturally aligned; a contradicted target is not automatically a score of zero unless the error is materially relevant under the applicable dimension.
+
+\section{Contextual Fallback for Insufficient Evidence}
+\label{sec:contextual-fallback}
+
+A completed verification must answer the practical question of how culturally appropriate the response is. For dimensions unresolved by the evidence-grounded scorer, including dimensions whose relevant retrievable targets all end in \texttt{insufficient}, Vericult executes a second semantic stage, \texttt{contextual\_fallback\_v1}.
+
+The fallback receives the full prompt, full response, explicit context, requested dimension IDs, D01--D10 rubric and a compact diagnostic description of which target evidence was unresolved. It does not receive fabricated replacement evidence. It must assign 0, 1 or 2 to every requested dimension and is instructed to be conservative under genuine cultural variation. Insufficient retrieval is treated as uncertainty, not as evidence that the response is correct or incorrect.
+
+This dual-path design prevents two undesirable extremes. Pure retrieval would fail on cultural issues that are contextual, normative or poorly documented online. Pure direct judging would discard the benefits of external evidence where verifiable claims are available. Vericult therefore uses evidence when it can materially support the judgment and a transparent model-based fallback when it cannot.
+
+The fallback does not make all decisions equally trustworthy. Final analysis separately reports evidence coverage and fallback frequency. A result supported by relevant frozen evidence and a result produced under unresolved retrieval share the same cultural label space, but their evidential basis is different and remains visible to users and researchers.
+
+\section{Aggregation and Candidate Labels}
+
+Let $s_j\in\{0,1,2\}$ be the final numeric score for each planned dimension $j\in J$. For a completed candidate evaluation,
+\begin{equation}
+S(r)=\frac{1}{2|J|}\sum_{j\in J}s_j,
+\end{equation}
+with the human-readable \texttt{vericult\_score}=100S(r). A completed run is therefore expected to have a numeric score whenever the dimension plan is nonempty.
+
+The final candidate label is deterministic:
+\begin{itemize}
+    \item \texttt{culturally\_inappropriate} if any applicable dimension receives 0;
+    \item \texttt{culturally\_appropriate} if every applicable dimension receives 2;
+    \item \texttt{partially\_culturally\_appropriate} otherwise.
+\end{itemize}
+
+Evidence sufficiency is reported separately through target verdicts, memo sufficiency, confidence and \texttt{evidence\_coverage}. Technical status is also separate. Thus low evidence coverage can coexist with a final cultural label, while a broken pipeline remains a failed run rather than a semantic label.
+
+\section{Best-of-4 as an Evaluation Mode}
+
+Vericult's primary task is single-response verification. The \texttt{rank} interface is an evaluation convenience requiring exactly four responses. Shared prompt context and dimension plan are computed once; each candidate is then evaluated independently.
+
+Candidates containing a score-0 material misalignment are ineligible for endorsement. Among eligible candidates, the unique highest exact aggregate wins; an exact top tie yields \texttt{no\_clear\_winner}. If every candidate is culturally inappropriate, the result is \texttt{no\_acceptable\_candidate}. Technical candidate failure prevents a forced winner.
+
+Best-of-4 is useful because it permits comparison with preference-oriented reward models and CARB-style experiments. It is not required by the final application interface, which accepts one prompt and one generated answer.
+
+\section{LIVE and REPLAY Evidence Modes}
+
+LIVE mode performs retrieval and stores immutable evidence schedules and snapshots. REPLAY mode reuses those frozen artifacts and has no live-search fallback. The schedule contains neutral questions, queries, snapshot identifiers and hashes, and any bounded follow-up. REPLAY verifies these artifacts before use.
+
+REPLAY freezes evidence acquisition, not the entire semantic pipeline. Context planning, memo interpretation, target comparison, dimension scoring and contextual fallback remain model operations. Temperature zero and frozen evidence reduce variance but do not imply bitwise deterministic neural inference.
+
+The two-mode design makes empirical reporting clearer. LIVE is the evidence-acquisition phase; REPLAY is the preferred mode for repeated analysis once evidence has been frozen, provided the semantic configuration has not changed.
+
+\section{Traceability and Reproducibility}
+
+Every candidate run writes a JSON trace containing a run identifier, pipeline version, Git commit when available, timestamp, LIVE/REPLAY mode, serialized configuration, hashes of prompt, response, rubric and templates, semantic call records, target--evidence links, events, final result and partial evidence state for interrupted executions.
+
+Stable identifiers are derived from canonical representations of targets, questions, queries, documents, memos and snapshots. Trace validation checks target, memo and document links, query--snapshot equality, content hashes, scoring coverage, evidence coverage and final summary consistency. These checks support auditability but do not establish semantic correctness; empirical validation remains necessary.
+
+\section{Implementation Verification and Engineering History}
+
+The project uses Python 3.12, Pydantic contracts, pytest and Ruff. Before the deterministic-span fix, the main validation snapshot contained 130 passing tests and one gated live test. After the grounding change, CI reached 133 passing tests and one skipped test with lint and format checks passing. A live-provider smoke test also completed successfully with the configured local Ollama and retrieval provider.
+
+The first full v1 LIVE attempt exposed the quotation-grounding defect: 28 of 120 candidate runs failed technically, 25 at target extraction and three at dimension scoring. Because Best-of-4 treats any technical candidate failure conservatively, 16 of 30 prompt-level comparisons were unresolved. Trace inspection showed that most target failures were exact-copy corruptions such as punctuation changes, Markdown omission or truncated quotations. This motivated deterministic response spans and Python-owned quote attachment rather than changing the cultural rubric or fitting behavior to human labels.
+
+A later contextual-fallback revision addressed a different issue: a completed candidate should not be labeled \texttt{insufficient\_evidence} merely because retrieval cannot establish an external claim. Evidence insufficiency now remains diagnostic while the fallback supplies the required final cultural judgment. The architecture is considered frozen only after the updated CI suite and a small development diagnostic set pass under this final contract.
+
+\section{Methodological Summary}
+
+Vericult combines prompt-supported context, shared dimension planning, deterministic source-span grounding, epistemic target typing, neutral question generation, a candidate-blind evidence stage, source-aware bounded retrieval, immutable evidence snapshots, target-level evidence comparison, rubric-based scoring and contextual fallback. The architecture intentionally does not claim to discover a single objective cultural truth. Instead, it provides a reproducible procedure for making an inspectable judgment about a concrete response while preserving where the judgment came from and where evidence was weak.
