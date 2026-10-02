@@ -23,7 +23,6 @@
 \usepackage{hyperref}
 \usepackage[nameinlink,capitalise]{cleveref}
 \lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single}
-
 \usepackage[backend=biber,style=authoryear,maxcitenames=2]{biblatex}
 \addbibresource{references.bib}
 
@@ -46,95 +45,22 @@
 \clearpage
 \pagenumbering{arabic}
 
+\include{chapters/01_introduction}
+\include{chapters/02_background}
+\include{chapters/03_related_work}
+\include{chapters/04_cultural_framework}
+\include{chapters/05_verifier_methodology}
+\include{chapters/06_experimental_methodology}
+\include{chapters/07_evaluation_results}
+\include{chapters/08_error_analysis_discussion}
+\include{chapters/09_limitations_validity}
+\include{chapters/10_conclusion}
 
-% ===== BEGIN chapters/01_introduction.tex =====
-\chapter{Introduction}
-\label{ch:introduction}
+\appendix
+\include{appendices/appendix_rubric}
+\include{appendices/appendix_prompts}
+\include{appendices/appendix_human_annotation}
+\include{appendices/appendix_reproducibility}
 
-\section{Motivation}
-
-Large language models (LLMs) are increasingly used as general-purpose interfaces for information seeking, advice, writing assistance, education and workplace communication. In these settings, response quality depends on more than grammatical fluency or factual correctness. Many user requests are situated in cultural contexts involving local practices, forms of address, social expectations, institutional constraints, religious sensitivities, value conflicts, historical references or identity-related concerns. A response can therefore be fluent and factually plausible while still being poorly adapted to the situation in which it is used.
-
-Culture is not a single stable variable that can be reduced to nationality. Institutional and scholarly accounts describe culture through overlapping features such as ways of life, values, traditions, beliefs, identities, language and social participation, while surveys of cultural NLP operationalize different subsets of these facets depending on the task \parencite{unesco2001culturaldiversity,cescr2009gc21,adilazuarda2024culture,liu2025culturallyaware,pawar2025culturalawareness}. Cultural appropriateness is consequently contextual and often plural. A common tendency is not a binding rule, a legal requirement is not an informal custom, and a majority preference is not moral unanimity.
-
-Recent benchmarks expose these difficulties from complementary angles. BLEnD and CulturalBench measure broad cultural knowledge; NormAd measures adaptation to increasingly explicit social norms; SafeWorld combines geo-diverse cultural and legal constraints; CARB studies whether reward models can rank culturally preferable responses; FrameNet-Cultures evaluates open-ended model behavior through cross-cultural frame semantics; and ExCAM directly targets cultural-error detection in arbitrary instruction--output pairs \parencite{myung2024blend,chiu2025culturalbench,rao2025normad,yin2024safeworld,zhang2026carb,jamshidi2026framenet,leiter2026excam}. Together, these studies show that cultural alignment is both a generation problem and an evaluation problem.
-
-This thesis focuses on the evaluation side. Once an LLM has produced an answer, a user, developer or auditor may need to know whether that particular answer is culturally appropriate for the stated context and why. A scalar reward-model preference score offers limited diagnostics. A direct LLM judge can explain its choice, but judge models are sensitive to prompt design, ordering and evaluator-specific biases \parencite{zheng2023llmjudge,wang2024notfairevaluators}. A useful verification layer should therefore expose the culturally relevant dimensions, separate externally checkable claims from contextual or normative judgments, retrieve evidence where retrieval is appropriate, and leave a reproducible trace of the decision process.
-
-The system developed in this thesis is \textbf{Vericult}, a standalone post-hoc verifier for culturally situated LLM outputs. Its primary interface evaluates a single prompt--response pair. Best-of-4 ranking is retained as an evaluation mode because it permits comparison with preference-oriented reward models and CARB-style protocols; it is not the end-user product requirement. The intended demonstration workflow is instead:
-\[
-\text{user prompt} \rightarrow \text{chosen LLM} \rightarrow \text{one answer} \rightarrow \text{Vericult} \rightarrow \text{cultural assessment}.
-\]
-
-\section{Problem Statement}
-
-Given a prompt $p$ and generated response $r$, Vericult should determine which cultural dimensions are relevant, identify materially important response content, acquire external evidence for claims that are meaningfully retrievable, and produce an interpretable assessment of how culturally appropriate the response is. The final completed assessment must be one of three states: \texttt{culturally\_appropriate}, \texttt{partially\_culturally\_appropriate}, or \texttt{culturally\_inappropriate}. Retrieval insufficiency remains visible as a diagnostic condition, but it is not itself a fourth cultural class. When external evidence cannot resolve a dimension, the system falls back to a conservative contextual judgment based on the prompt, full response, explicit context and D01--D10 rubric.
-
-This problem differs from ordinary factual verification in several ways. First, cultural interpretation depends on explicit context. A statement about etiquette, language, religion or institutions may be appropriate only for a particular relationship, setting, location or time. Inferring unstated demographic or geographic facts can itself introduce bias, so the verifier distinguishes supported context from assumptions.
-
-Second, not every culturally relevant issue is externally verifiable. Some response properties concern internal compliance with the user's request, interpersonal pragmatics, or plural values. Retrieval can describe evidence about such issues, but it cannot turn every contextual judgment into an objective fact. The architecture therefore separates retrievable evidence from final rubric-based cultural judgment.
-
-Third, retrieval can introduce its own bias and contamination. If candidate wording remains visible while evidence is gathered, search may become oriented toward proving or disproving that candidate. Benchmark repositories or leaked annotations may also enter the evidence set. Vericult therefore uses a structural candidate-blind evidence stage, bounded retrieval, provenance classification, explicit exclusions, and immutable evidence snapshots.
-
-Fourth, a verifier intended for practical use must distinguish semantic uncertainty from technical failure. Missing evidence should not silently become a positive or negative cultural conclusion, while provider errors, malformed structured output or broken execution must not be disguised as cultural judgments. Vericult therefore records evidence sufficiency and technical status separately from the final cultural label.
-
-\section{Research Gap}
-
-Existing work covers important parts of this problem but does not directly provide the architecture investigated here. CulturalBench, BLEnD, NormAd, SafeWorld and FrameNet-Cultures are primarily evaluation datasets or protocols for measuring model behavior \parencite{chiu2025culturalbench,myung2024blend,rao2025normad,yin2024safeworld,jamshidi2026framenet}. CARB focuses on reward-model cultural awareness and preference ranking \parencite{zhang2026carb}. CultureLLM and ValuesRAG improve generation through cultural adaptation or retrieved context rather than independently verifying a completed response \parencite{li2024culturellm,seo2025valuesrag}. ExCAM comes closest to the present objective by identifying, rating and explaining cultural errors in instruction--output pairs, but it is a trained metric rather than an evidence-retrieval architecture \parencite{leiter2026excam}.
-
-The practical gap addressed here is therefore a standalone verifier that combines an explicit multidimensional cultural rubric with bounded retrieval, source-aware evidence synthesis, deterministic grounding to exact response spans, a candidate-blind evidence boundary, contextual fallback when retrieval is inconclusive, and reproducible traces. The thesis does not assume that this architecture is superior. It implements it as a testable system and evaluates where it agrees with human judgments and established comparison systems, where it fails, and which design choices are useful for future work.
-
-\section{Research Questions}
-
-The thesis is organized around four research questions:
-
-\begin{description}
-    \item[\textbf{RQ1}] How reliably can Vericult assess the cultural appropriateness of an arbitrary prompt--response pair using the D01--D10 framework?
-    \item[\textbf{RQ2}] In a controlled Best-of-4 setting, to what extent does Vericult identify the response preferred by human annotators, and how does this compare with an independent reward model and a direct LLM judge?
-    \item[\textbf{RQ3}] How well does the frozen verifier transfer to prompts and response settings derived from external cultural-evaluation research such as CARB, SafeWorld, CultureLLM/World Values Survey, ScopeBench, CulturalBench, FrameNet-Cultures or ExCAM?
-    \item[\textbf{RQ4}] Which failure modes arise from context planning, target extraction, retrieval, evidence synthesis, contextual fallback and final scoring, and what do these failures imply for future cultural-verification systems?
-\end{description}
-
-RQ1 reflects the intended deployment scenario. RQ2 uses Best-of-4 as a controlled preference-evaluation instrument and as a bridge to reward-model research. RQ3 evaluates external validity rather than constructing further project-specific examples. RQ4 treats failures as empirical evidence about the architecture rather than as cases to be tuned away after the final freeze.
-
-\section{Contributions}
-
-The thesis makes the following contributions:
-
-\begin{itemize}
-    \item \textbf{A literature-grounded D01--D10 operational framework} spanning everyday practices, pragmatics, etiquette, values, institutions, religion, family and gender, work and civic life, heritage, and identity/intergroup relations.
-    \item \textbf{A standalone evidence-grounded verifier architecture} that separates prompt context, cultural-dimension planning, deterministic response-span grounding, bounded evidence acquisition, frozen evidence comparison and final cultural scoring.
-    \item \textbf{A dual-path decision mechanism}: retrievable cultural claims use external evidence when available, while unresolved evidence leads to an explicit contextual fallback rather than a user-facing \texttt{insufficient\_evidence} class.
-    \item \textbf{A reproducible evidence layer} with source typing, leakage controls, LIVE acquisition, REPLAY over frozen snapshots, stable identifiers and trace validation.
-    \item \textbf{A controlled Best-of-4 evaluation mode} used for comparison with human preferences, Skywork Reward V2 and a direct LLM judge, without making Best-of-4 the primary product interface.
-    \item \textbf{A staged empirical protocol} separating development/stress testing on PLT v1, realistic strong-model evaluation on PLT v2, and external validation using independently published cultural datasets.
-\end{itemize}
-
-\section{Thesis Structure}
-
-\Cref{ch:background} introduces alignment, reward models, LLM-as-a-judge evaluation, cultural appropriateness and evidence-grounded verification. \Cref{ch:related} reviews cultural benchmarks and methods, with particular attention to CARB and recent free-text evaluators. \Cref{ch:framework} derives the D01--D10 operational framework. \Cref{ch:verifier} specifies Vericult's architecture and implementation. \Cref{ch:experiment} defines the final staged evaluation and freeze protocol. \Cref{ch:results} and \cref{ch:discussion} are intentionally reserved for the final frozen experiments. \Cref{ch:limitations} records the threats to validity that are already identifiable before results are known, and \cref{ch:conclusion} is finalized only after the empirical evidence is complete.
-
-% ===== END chapters/01_introduction.tex =====
-
-
-% ===== BEGIN chapters/02_background.tex =====
-\chapter{Background and Foundations}
-\label{ch:background}
-
-This chapter introduces the concepts required to understand the evaluation problem addressed in this thesis. It deliberately separates foundational concepts from the comparison of individual cultural-evaluation systems in \cref{ch:related}. The focus is therefore not on cataloguing prior work, but on establishing the technical and conceptual vocabulary needed for the proposed verifier and its later empirical comparison.
-
-\section{Large Language Models and Alignment}
-
-Large language models (LLMs) are typically trained first to model distributions over natural-language sequences and are subsequently adapted so that their outputs better satisfy user instructions and desired behavioral constraints. Modern post-training therefore adds an alignment stage to raw language modeling. A widely used formulation is reinforcement learning from human feedback (RLHF), in which human demonstrations and preference comparisons provide supervision for instruction following and preference optimization. In the InstructGPT pipeline, for example, supervised demonstrations are followed by a reward model trained on ranked model outputs and a reinforcement-learning stage that optimizes the policy against that learned reward signal \parencite{ouyang2022instructgpt}. The central point for this thesis is that alignment is mediated by operational signals: demonstrations, preferences, policies, constitutions, or evaluators define what behavior is rewarded.
-
-Such signals are necessarily incomplete proxies for the full range of judgments that may matter in deployment. A model can be generally helpful and still provide a response that is poorly adapted to the cultural, institutional, linguistic, or interpersonal situation described by a user. Conversely, a response that differs from a majority preference is not automatically culturally inappropriate. Cultural evaluation therefore raises a pluralism problem in addition to a general quality problem. \textcite{sorensen2024pluralistic} distinguish several forms of pluralistic alignment and argue that systems intended to serve diverse populations may need to represent, steer among, or calibrate to multiple reasonable perspectives rather than collapse them into a single undifferentiated preference. This observation is important for the present work because cultural appropriateness is treated as context-sensitive and potentially contested, not as a universal scalar property that can be inferred from one population-wide preference signal.
-
-The thesis consequently uses the term \emph{alignment} in a deliberately narrow and operational sense. A culturally aligned response is not assumed to encode an objectively correct culture. Rather, it is a response that is appropriately adapted to the explicit situation, does not materially misrepresent relevant practices or constraints, and represents legitimate variation where the context does not justify a single categorical answer. This distinction is developed further in \cref{sec:cultural-appropriateness} and operationalized in the D01--D10 framework in \cref{ch:framework}.
-
-\section{Preference Alignment and Reward Models}
-\label{sec:background-rm}
-
-Reward models (RMs) provide one mechanism for turning preference data into an evaluative signal. In a common setup, the model receives a prompt and one or more candidate responses and estimates which response is preferred. Classifier-based RMs often produce a scalar reward for each prompt--response pair, while generative evaluators can produce judgments or scores through language generation. During training, pairwise chosen/rejected examples can teach a model to assign higher reward to responses that better match the preference distribution represented in the data. During inference or evaluation, the same score can be used to rank several candidate responses.
-
-This mechanism is useful because it transforms costly human comparisons into a reusable learned evaluator. General RM benchmarks therefore test whether a reward model can discriminate preferred from rejected responses across heterogeneous tasks. RewardBench, for example, evaluates reward models on preference discrimination rather than on cultural evidence gathering \parencite{lambert2025rewardbench}. The Skywork-Reward-V2 family used later in this thesis is likewise a general preference-model family developed through large-scale preference-data curation \parencite{liu2026skyworkrewardv2}. These systems are therefore suitable as independent baselines for asking whether a general preference model happens to select the same candidate that human annotators judge most culturally appropriate.
-
+\printbibliography
+\end{document}
