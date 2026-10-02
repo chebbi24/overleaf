@@ -1,0 +1,47 @@
+\chapter{Reproducibility Manifest}
+\label{app:repro}
+
+This appendix records the pre-experiment state of the implementation and the fields that must be replaced by final frozen values immediately before the confirmatory runs. It intentionally distinguishes an architecture snapshot from a final empirical manifest.
+
+\begin{longtable}{p{4.7cm}p{8.9cm}}
+\caption{Reproducibility manifest for the final experiment.}\label{tab:repro-manifest}\\
+\toprule
+\textbf{Field} & \textbf{Current status / final requirement} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Field} & \textbf{Current status / final requirement} \\
+\midrule
+\endhead
+Implementation repository & \texttt{chebbi24/cultural-verification-thesis} \\
+Pre-freeze main revision & Main contains the deterministic response-span grounding reliability patch; the contextual-fallback revision is maintained on \texttt{fix/final-contextual-fallback} until its CI gate is satisfied and merged. \\
+Pipeline version & Current package configuration: \texttt{cultverify-1.1.0}; update if the final architecture freeze changes the version. \\
+Validation environment & Python 3.12 with exact dependencies stored in \texttt{requirements.lock}. \\
+Software validation & Deterministic span-grounding revision: 133 tests passed, 1 gated live-provider test skipped, Ruff lint/format passed. Contextual-fallback revision must pass the same CI gate before final freeze. \\
+Runtime rubric & \texttt{src/cultverify/resources/rubric.csv}; reproduced in \cref{app:rubric}. \\
+Semantic prompts & Versioned in \texttt{src/cultverify/prompts.py}; architecture summarized in \cref{app:prompts}. Final template hash must be stored in the experiment manifest. \\
+Final verifier backbone & \texttt{[TO BE FROZEN AFTER DEVELOPMENT-SET MODEL SELECTION]} \\
+Verifier temperature & Planned value 0; record exact final configuration. \\
+Semantic retry budget & Maximum one semantic repair retry. \\
+Retrieval & LIVE collection with bounded search; final provider/settings/exclusion policy recorded in manifest. \\
+Accepted documents per query & Current \texttt{top\_k}=3. \\
+Maximum material targets & 3. \\
+Maximum retrieval rounds & 2: two initial questions plus at most one follow-up question per target. \\
+Evidence cache & Separate immutable inventory/hash for each final evaluation source. \\
+v1 dataset & PLT001--PLT030 stress/development candidate set; retained for diagnostics/backbone selection. \\
+v2 dataset & Same prompts with newly generated strong-model candidates; file hash and generator mapping frozen after generation. \\
+Human v1 annotations & Completed five-annotator candidate ratings and forced A/B/C/D votes; development/reference artifact. \\
+Human v2 annotations & \texttt{[TO BE COLLECTED, ARCHIVED AND HASHED]} \\
+Skywork baseline & \texttt{Skywork/Skywork-Reward-V2-Qwen3-4B}, frozen model revision from implementation manifest. \\
+Direct judge & \texttt{[MODEL/PROMPT/ORDER SEED TO BE FROZEN]} \\
+External validation & Official CARB and complementary cultural-benchmark subsets; exact source IDs and hashes recorded. \\
+Statistical analysis & Bootstrap replicate count, seeds and analysis-code commit \texttt{[TO BE FROZEN]}. \\
+Experiment dates & \texttt{[TO BE RECORDED]}. \\
+\bottomrule
+\end{longtable}
+
+\section*{Required execution order}
+The final execution order follows the experimental methodology chapter: validate the final architecture; choose the backbone on development material; freeze Vericult; generate and annotate v2 without Vericult-based filtering; acquire and freeze LIVE evidence; execute primary REPLAY evaluation; run independent baselines; run external validation; then compute comparative statistics and qualitative trace analysis. No semantic tuning is permitted after the verifier freeze.
+
+\section*{Artifact inventory}
+The final submission archive should contain, or provide stable repository references to, v1 and v2 datasets, generator-provenance mappings, annotation exports, the experiment manifest, verifier traces, evidence schedules/snapshots, baseline outputs, external-validation selections, statistical-analysis outputs, figure-generation scripts, and the exact thesis source used for submission.
