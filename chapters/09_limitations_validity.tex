@@ -1,0 +1,46 @@
+\chapter{Threats to Validity and Limitations}
+\label{ch:limitations}
+
+\section{Construct Validity}
+
+Cultural appropriateness is not directly observable as a single objective variable. The D01--D10 framework is a designed operationalization grounded in recurring constructs from the literature, not a universally validated cultural ontology. Its dimensions overlap and can encode different normative assumptions. A high Vericult score therefore means that the response is judged well aligned under this explicit rubric, not that every member of the referenced culture would endorse it.
+
+The three final labels also compress substantial variation. \texttt{partially\_culturally\_appropriate} can represent mild omission, mixed evidence, imperfect contextualization or significant but non-material limitations. The numerical 0--100 aggregate is derived from equal-weight ordinal dimension scores and should not be interpreted as a calibrated probability of cultural correctness.
+
+\section{Internal Validity}
+
+Vericult relies on a language model at multiple semantic stages. Errors can propagate from context extraction to dimension planning, target selection, evidence interpretation and final scoring. Strict schemas and deterministic span ownership reduce structural errors but do not guarantee correct reasoning. The same backbone is intentionally reused across stages, which controls heterogeneity but can also correlate mistakes throughout the pipeline.
+
+The candidate-blind evidence boundary is incomplete by construction. Verification questions are generated from target content before blindness begins, so framing can survive through the questions even when candidate text is absent from later retrieval. Search ranking, snippets and source availability can further influence evidence composition.
+
+The contextual fallback improves decisiveness but introduces a trade-off: a completed run now always produces a cultural score even when retrieval is inconclusive. The fallback is explicitly marked in traces and is instructed not to invent evidence, but its judgment is necessarily closer to an ordinary LLM evaluator than the fully evidence-grounded path. Final analysis must therefore report fallback frequency and not present all scores as equally evidence-supported.
+
+\section{External Validity}
+
+The PLT datasets contain only 30 prompts. Even with four candidates per prompt, they cannot represent the full space of languages, regions, religions, institutions, value systems or interaction types relevant to cultural appropriateness. v1 is additionally failure-oriented and therefore not representative of modern aligned-model outputs. v2 improves realism but remains tied to the selected generator models and the original 30 prompt concepts.
+
+External validation across CARB, SafeWorld, CultureLLM/WVS, ScopeBench and free-text cultural datasets is therefore necessary. Even then, benchmark coverage is not equivalent to global cultural coverage. Many benchmarks rely on country labels or written web-accessible knowledge and may underrepresent local, oral, minority or rapidly changing practices.
+
+\section{Human Reference Limitations}
+
+The v1 human reference contains five annotators and shows low winner agreement ($\kappa=0.090494$). This is not necessarily annotation failure; it can also reflect genuine ambiguity among candidate responses. Nevertheless, such a small non-expert panel cannot establish cultural ground truth. Results are therefore described as agreement with a human reference rather than accuracy against objective culture.
+
+The realized v1 protocol forced A/B/C/D winner selection. Consequently, a candidate can receive the most votes even when all candidates are rated poorly in absolute terms. This motivates keeping candidate-level three-point ratings separate from Best-of-4 winner analysis. v2 annotation should preserve this distinction explicitly.
+
+\section{Retrieval and Evidence Limitations}
+
+Web evidence is uneven across cultures, languages and communities. Search engines favor indexed, popular and often English-accessible material. Source classification cannot fully correct this representation bias. Provider snippets can omit surrounding context, and even peer-reviewed or official evidence can be outdated, geographically mismatched or irrelevant to an individual's situation.
+
+Evidence sufficiency is itself an LLM judgment. A memo labeled sufficient can still be wrong; low evidence coverage does not imply that the response is culturally inappropriate. Conversely, a culturally problematic response can concern an issue that is obvious from the prompt and response without needing retrieval. For this reason evidence coverage is reported only as a diagnostic.
+
+\section{Reproducibility and Temporal Validity}
+
+Local Ollama execution improves model-version control when the exact digest is recorded, but hardware, quantization and software-version differences can still affect latency and potentially output. Temperature zero reduces sampling variability but does not imply deterministic neural inference. LIVE retrieval is temporally unstable because search results and webpages change. REPLAY mitigates this by freezing evidence snapshots, but semantic stages are still rerun.
+
+Reproducibility therefore depends on preserving code commits, manifests, model digests, prompt/rubric hashes, raw candidates, human exports and evidence artifacts. The Git repository alone is insufficient if ignored runtime artifacts are lost.
+
+\section{Technical Limitations}
+
+The verifier is computationally expensive compared with a single direct-judge call because each candidate can trigger multiple semantic and retrieval stages. Bounded target counts and retrieval rounds constrain cost but can miss secondary issues. The architecture currently runs candidate evaluations sequentially in the reference implementation; parallelization could reduce wall time but must preserve deterministic artifact ownership and avoid local-model memory contention.
+
+Structured-output failures remain possible despite bounded retry. Technical failure is intentionally reported separately rather than converted into a cultural judgment. A practical deployment would additionally need robust provider failover, caching policy, monitoring and user-facing explanation of the distinction between low evidence support and execution error.
