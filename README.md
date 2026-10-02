@@ -1,23 +1,27 @@
 # Bachelor Thesis — Vericult
 
-LaTeX source for the bachelor thesis **Evidence-Grounded Verification of Cultural Appropriateness in Large Language Model Outputs**.
+LaTeX source for the bachelor thesis **“Vericult: Evidence-Grounded Verification of Cultural Appropriateness in Large Language Model Outputs.”**
 
-This repository is intentionally kept Overleaf-friendly: `main.tex` contains the complete current thesis source and `references.bib` contains the consolidated bibliography.
+## Current pre-final-experiment freeze
 
-## Current freeze (pre-final experiments)
+Completed and synchronized to the current project state:
 
-Completed and synchronized to the project state:
-- Chapters 1–6: motivation, background, related work, D01–D10 framework, Vericult architecture, and final experimental methodology
-- Chapter 9: threats to validity and limitations
-- Appendices: rubric, semantic contracts, realized v1 human-annotation protocol, and reproducibility manifest
-- Updated narrative: single-response verification is the primary use case; Best-of-4 is an evaluation mode
-- Updated architecture: deterministic response spans and explicit contextual fallback when retrieval is insufficient
-- Updated empirical plan: v1 development/stress set → backbone selection/freeze → realistic v2 → external validation
+- Chapters 1–6: motivation, background, related work, D01–D10 framework, Vericult architecture, and experimental methodology.
+- Chapter 9: threats to validity and limitations.
+- Appendices: runtime rubric, semantic prompt contracts, realized v1 human-annotation protocol, and reproducibility manifest.
+- Single-response verification is the primary intended use case; Best-of-4 is retained as a comparative evaluation protocol.
+- The architecture reflects deterministic response-span grounding and the explicit contextual fallback for evidence-unresolved dimensions.
+- v1 is treated as development/stress material; v2 is the realistic confirmatory regime.
+- Backbone selection occurs before the final semantic freeze.
+- CARB and complementary published cultural benchmarks are used only after freeze for external validation.
 
-Intentionally left open until the frozen final experiments:
+Intentionally left as TODO until the final experiments:
+
 - Abstract
 - Chapter 7 — Evaluation Results
 - Chapter 8 — Error Analysis and Discussion
 - Chapter 10 — Conclusion and Future Work
 
-The current source compiles successfully with `pdflatex` + `biber` and produced a 72-page validation build on 2026-10-02.
+The bibliography is consolidated in `references.bib`. The final empirical manifest will replace the remaining explicitly marked “to be frozen / to be recorded” fields once the backbone, v2 dataset, v2 human reference, external sample, and analysis seeds are fixed.
+
+Compile with an Overleaf/Biber-capable LaTeX environment using `main.tex`.
