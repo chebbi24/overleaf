@@ -1,7 +1,54 @@
 \chapter{Evaluation Results}
 \label{ch:results}
 
-\textbf{TODO after the frozen executions are complete. No result values are inserted before machine predictions are persisted.}
+\textbf{The final frozen PLT/baseline and post-freeze external results remain to be inserted after execution. The pre-freeze cross-dataset validation below is already fixed and is reported separately because it used an earlier Vericult revision.}
+
+\section{Pre-Freeze Cross-Dataset Validation Results}
+\label{sec:external120-results}
+
+The 120-item cross-dataset run described in \cref{sec:external120-pre-freeze} reached a final post-rerun completion rate of
+\[
+\frac{116}{120}=96.7\%.
+\]
+Three of the four remaining failures were transport timeouts; one was a structured target-extraction failure. The latter is methodologically useful because it exposed a concrete schema-grounding weakness rather than a cultural disagreement.
+
+Among the 116 completed records, the earlier verifier produced 102 substantive numeric cultural assessments: 22 \texttt{culturally\_appropriate} and 80 \texttt{partially\_culturally\_appropriate}. No substantively scored record was labelled \texttt{culturally\_inappropriate}. Six completed records returned \texttt{insufficient\_evidence}, while eight returned the older \texttt{not\_culturally\_applicable} outcome. Across the 102 numeric assessments, the mean normalized Vericult score was 87.24. Mean evidence coverage over completed records for which coverage was defined was 71.5\%.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Final post-rerun results of the pre-freeze 120-item cross-dataset validation. ``Positive'' counts \texttt{culturally\_appropriate} plus \texttt{partially\_culturally\_appropriate}.}
+\label{tab:external120-results}
+\begin{tabularx}{\textwidth}{lrrrrr}
+\toprule
+\textbf{Dataset} & \textbf{Complete} & \textbf{Positive} & \textbf{Insuff.} & \textbf{N/A} & \textbf{Mean score} \\
+\midrule
+CARE & 20/20 & 17 & 1 & 2 & 83.8 \\
+Community Alignment & 18/20 & 17 & 0 & 1 & 91.5 \\
+PLURAL & 20/20 & 17 & 3 & 0 & 89.7 \\
+PACT & 19/20 & 18 & 0 & 1 & 87.5 \\
+ThaiCLI & 19/20 & 16 & 1 & 2 & 84.4 \\
+PRISM & 20/20 & 17 & 1 & 2 & 86.4 \\
+\midrule
+\textbf{Overall} & \textbf{116/120} & \textbf{102} & \textbf{6} & \textbf{8} & \textbf{87.2} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Because the corpus deliberately contains source-endorsed responses, the absence of a \texttt{culturally\_inappropriate} decision among all 102 substantively scored cases is directionally consistent with the source-side signal. This is a useful sanity check that Vericult was not systematically rejecting reference, preferred or chosen responses across unrelated datasets and languages. It is \emph{not} an accuracy estimate: the six datasets encode different notions of a desirable response, and PACT in particular models a culture--preference trade-off rather than a universal cultural ground truth.
+
+The distribution also shows that Vericult did not simply copy the positive source signal. Most source-endorsed responses were rated only partially appropriate rather than fully appropriate, and 14 completed cases were selective or non-applicable under the earlier architecture. The verifier therefore remained stricter than a binary reproduction of the source preference.
+
+PRISM permits a limited fine-grained comparison because the archived records include the original response rating. For the 17 PRISM records with a numeric Vericult score, Pearson correlation between the PRISM response score and Vericult score was $r=-0.203$, and Spearman rank correlation was $\rho=-0.193$. The small, restricted positive-score sample makes these estimates unstable, but they provide no evidence that the Vericult score is calibrated to reproduce PRISM's human rating scale. The empirical support from this run is therefore best stated as \emph{coarse source consistency plus high execution completion}, not human-score calibration or benchmark accuracy.
+
+The four unresolved items were:
+\begin{itemize}
+    \item records 028 and 034, Community Alignment: \texttt{cultural\_applicability\_v1} transport \texttt{ReadTimeout};
+    \item record 084, ThaiCLI: the same transport \texttt{ReadTimeout}; and
+    \item record 076, PACT: \texttt{target\_extractor\_v1} remained structurally invalid after bounded retry, later traced to malformed span ID \texttt{S0:01}.
+\end{itemize}
+
+These results provide empirical evidence that the staged verifier could operate across heterogeneous cultural datasets and multilingual inputs while also exposing technical failure modes that motivated later reliability work. Since the run predates the final Vericult 1.1 semantics, it is treated as supporting engineering and construct evidence rather than the final answer to RQ1--RQ3.
 
 \section{Final Runtime and Execution Summary}
 Report the exact Ollama digest, execution dates, completion/failure counts and preserved artifact manifests.
