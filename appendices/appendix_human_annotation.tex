@@ -1,42 +1,48 @@
 \chapter{Human Annotation Protocol}
 \label{app:annotation}
 
-This appendix records the annotation design used for the original v1 candidate set and the corresponding protocol to be applied to v2. The purpose is to preserve the distinction between absolute cultural appropriateness and relative Best-of-4 preference.
+This appendix records the realized human-reference protocol for the frozen PLT controlled benchmark. The purpose is to preserve the distinction between absolute cultural appropriateness and relative Best-of-4 preference.
 
 \section*{Annotator-facing task}
-For each evaluation item, the annotator is shown one prompt followed by four complete candidate responses labelled A, B, C and D. Generator identity, Vericult outputs, reward-model scores, direct-judge decisions, evidence traces and provisional labels are hidden.
 
-For each candidate, the annotator records a three-level cultural-appropriateness rating. The three levels correspond operationally to inappropriate, partially appropriate, and appropriate. After rating all four candidates, the annotator answers a forced comparative question asking which of A, B, C or D is the most culturally appropriate response.
+For each evaluation item, the annotator was shown one prompt followed by four complete candidate responses labelled A, B, C and D. Generator identity, Vericult outputs, reward-model scores, direct-judge decisions, evidence traces and provisional labels were hidden.
 
-The forced winner is a relative judgment. It must not be interpreted as evidence that the chosen response is absolutely appropriate. A prompt can contain four weak responses and still require one relative choice. Candidate-level ratings are therefore retained as the primary signal for single-response evaluation.
+For each candidate, the annotator recorded a three-level cultural-appropriateness rating corresponding operationally to inappropriate, partially appropriate and appropriate. After rating all four candidates, the annotator answered a forced comparative question selecting which of A, B, C or D was the most culturally appropriate response.
 
-\section*{v1 realization}
-The completed v1 annotation used five annotators over 30 prompts and four candidates per prompt. This yields 120 unique candidate responses, 600 candidate-level ratings and 150 Best-of-4 winner votes. The earlier thesis draft incorrectly described a \emph{No clear winner} choice and a 1--5 confidence field. Those fields were not part of the realized v1 study and are not reconstructed retrospectively.
+The forced winner is a relative judgment. It must not be interpreted as evidence that the chosen response is absolutely appropriate. Candidate-level ratings are therefore retained separately for the single-response evaluation.
 
-\section*{v2 protocol}
-The v2 survey uses the same two-part structure on the newly generated candidates. Candidate model identities remain blinded. If candidate order is randomized, the exact presented order is archived so that responses can be mapped back to canonical A--D identifiers. The survey export is frozen and hashed before the final automated-system comparison is computed.
+\section*{Realized study}
+
+The completed annotation contains five annotators, 30 prompts and four candidates per prompt. This yields 120 unique candidate responses, 600 candidate-level ratings and 150 Best-of-4 winner votes.
+
+The realized form did \emph{not} include the earlier planned \emph{No clear winner} option or a 1--5 confidence field. Those fields are not reconstructed retrospectively. The frozen workbook is treated as immutable input; derived candidate, prompt and summary tables are regenerated deterministically from it and hashed in \texttt{data/evaluation/human\_gold\_manifest.json}.
 
 \section*{Reference construction}
-Candidate-level analysis uses the full distribution of 1/2/3 ratings, including median and mean summaries and an ordinal inter-rater agreement statistic. Relative Best-of-4 analysis uses the vote distribution over A--D. A unique majority or unique top-vote candidate can be used as the prompt-level human reference according to the pre-declared analysis rule; ties and highly split votes are retained as ambiguous rather than discarded silently.
 
-The aggregate is referred to as a \emph{human reference judgment}, not cultural ground truth. Five student annotators cannot be assumed to represent every culture involved in the benchmark, and disagreement is itself informative for a culturally plural task.
+Candidate-level analysis preserves the full distribution of 1/2/3 ratings and reports mean, median and count summaries. Prompt-level relative analysis preserves the A--D vote distribution. A unique candidate with at least three of five votes is treated as a majority winner for resolved-winner comparison; prompts without such a majority remain ambiguous.
 
-\section*{Minimum archived fields}
+The frozen reference contains 17 prompts with a majority winner and 13 without one. Ten prompts tie for the largest winner-vote count; one prompt is unanimous. Fleiss' $\kappa$ over the complete winner matrix is 0.090494.
+
+The aggregate is referred to throughout the thesis as a \emph{human reference judgment}, not cultural ground truth. A five-person panel cannot represent every culture or subgroup involved, and disagreement is itself informative for a culturally plural task.
+
+\section*{Frozen annotation artifacts}
+
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{Minimum fields required from the final v2 annotation export.}
-\label{tab:annotation-export-schema}
-\begin{tabularx}{\textwidth}{p{3.6cm}X}
+\caption{Human-reference artifacts retained for reproducibility.}
+\label{tab:annotation-artifacts}
+\begin{tabularx}{\textwidth}{p{4.2cm}X}
 \toprule
-\textbf{Field} & \textbf{Purpose} \\
+\textbf{Artifact} & \textbf{Role} \\
 \midrule
-Annotator/response ID & Distinguish independent annotation records without requiring real-world identity disclosure \\
-Prompt ID & Link annotation to the fixed evaluation item (e.g. \texttt{PLT001}) \\
-Presented candidate order & Recover any survey-side randomization \\
-Rating A--D & Three-level absolute cultural-appropriateness rating for each candidate \\
-Relative winner & Forced A/B/C/D preference after absolute ratings \\
-Completion metadata & Audit missing or duplicate submissions where available \\
+\texttt{human\_annotations\_raw.xlsx} & Immutable survey export used as source data. \\
+\texttt{human\_gold\_candidates.csv} & Candidate-level rating summaries for 120 responses. \\
+\texttt{human\_gold\_prompts.csv} & Prompt-level A--D vote distributions and majority/ambiguity fields. \\
+\texttt{human\_gold\_summary.json} & Aggregate counts and inter-rater statistics. \\
+\texttt{human\_gold\_manifest.json} & SHA-256 hashes linking the raw workbook to all derived artifacts. \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+Human Gold is never loaded by Vericult or either baseline during inference. It is joined only after all machine predictions have been persisted.

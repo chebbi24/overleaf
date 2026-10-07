@@ -1,47 +1,52 @@
 \chapter{Reproducibility Manifest}
 \label{app:repro}
 
-This appendix records the pre-experiment state of the implementation and the fields that must be replaced by final frozen values immediately before the confirmatory runs. It intentionally distinguishes an architecture snapshot from a final empirical manifest.
+This appendix records the frozen pre-results implementation and experiment contract. Runtime fields that can only be known on the execution machine are explicitly distinguished from semantic design fields, which are already frozen.
 
 \begin{longtable}{p{4.7cm}p{8.9cm}}
 \caption{Reproducibility manifest for the final experiment.}\label{tab:repro-manifest}\\
 \toprule
-\textbf{Field} & \textbf{Current status / final requirement} \\
+\textbf{Field} & \textbf{Frozen value / execution requirement} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Field} & \textbf{Current status / final requirement} \\
+\textbf{Field} & \textbf{Frozen value / execution requirement} \\
 \midrule
 \endhead
 Implementation repository & \texttt{chebbi24/cultural-verification-thesis} \\
-Pre-freeze main revision & Main contains the deterministic response-span grounding reliability patch; the contextual-fallback revision is maintained on \texttt{fix/final-contextual-fallback} until its CI gate is satisfied and merged. \\
-Pipeline version & Current package configuration: \texttt{cultverify-1.1.0}; update if the final architecture freeze changes the version. \\
-Validation environment & Python 3.12 with exact dependencies stored in \texttt{requirements.lock}. \\
-Software validation & Deterministic span-grounding revision: 133 tests passed, 1 gated live-provider test skipped, Ruff lint/format passed. Contextual-fallback revision must pass the same CI gate before final freeze. \\
-Runtime rubric & \texttt{src/cultverify/resources/rubric.csv}; reproduced in \cref{app:rubric}. \\
-Semantic prompts & Versioned in \texttt{src/cultverify/prompts.py}; architecture summarized in \cref{app:prompts}. Final template hash must be stored in the experiment manifest. \\
-Final verifier backbone & \texttt{[TO BE FROZEN AFTER DEVELOPMENT-SET MODEL SELECTION]} \\
-Verifier temperature & Planned value 0; record exact final configuration. \\
-Semantic retry budget & Maximum one semantic repair retry. \\
-Retrieval & LIVE collection with bounded search; final provider/settings/exclusion policy recorded in manifest. \\
-Accepted documents per query & Current \texttt{top\_k}=3. \\
-Maximum material targets & 3. \\
-Maximum retrieval rounds & 2: two initial questions plus at most one follow-up question per target. \\
-Evidence cache & Separate immutable inventory/hash for each final evaluation source. \\
-v1 dataset & PLT001--PLT030 stress/development candidate set; retained for diagnostics/backbone selection. \\
-v2 dataset & Same prompts with newly generated strong-model candidates; file hash and generator mapping frozen after generation. \\
-Human v1 annotations & Completed five-annotator candidate ratings and forced A/B/C/D votes; development/reference artifact. \\
-Human v2 annotations & \texttt{[TO BE COLLECTED, ARCHIVED AND HASHED]} \\
-Skywork baseline & \texttt{Skywork/Skywork-Reward-V2-Qwen3-4B}, frozen model revision from implementation manifest. \\
-Direct judge & \texttt{[MODEL/PROMPT/ORDER SEED TO BE FROZEN]} \\
-External validation & Official CARB and complementary cultural-benchmark subsets; exact source IDs and hashes recorded. \\
-Statistical analysis & Bootstrap replicate count, seeds and analysis-code commit \texttt{[TO BE FROZEN]}. \\
-Experiment dates & \texttt{[TO BE RECORDED]}. \\
+Semantic/code freeze & \texttt{200bca4575304795f491e76308d9be327ca269da} \\
+Repository freeze snapshot & \texttt{09257316c52f6c82eab405dbf2f8e2aff37f9b97} on \texttt{main} and \texttt{freeze/vericult-v1.1-thesis} \\
+Pipeline version & \texttt{cultverify-1.1.0} \\
+Validation environment & Python 3.12 with dependencies pinned in \texttt{requirements.lock} \\
+Final CI & GitHub Actions run \texttt{37603060612}: install, compile, full pytest suite, Ruff lint and Ruff format all passed \\
+Runtime rubric & \texttt{src/cultverify/resources/rubric.csv}; reproduced in \cref{app:rubric} \\
+Semantic prompts & \texttt{src/cultverify/prompts.py}; contracts summarized in \cref{app:prompts} \\
+Verifier backbone & Ollama \texttt{qwen3:4b}, temperature 0 \\
+Exact Ollama digest & Captured by \texttt{scripts/preflight\_final\_experiment.py} immediately before LIVE acquisition \\
+Semantic retry budget & One repair retry; one transport retry \\
+Retrieval & Tavily LIVE, \texttt{search\_depth=advanced}; REPLAY has no live fallback \\
+Accepted documents per query & \texttt{top\_k}=3 \\
+Maximum material targets & 3 \\
+Maximum retrieval rounds & 2 \\
+Controlled dataset & \texttt{data/evaluation/best\_of4\_v1.csv}; 30 prompts, 120 candidates \\
+Controlled dataset SHA-256 & \texttt{bb1f096dfbc74913a80219c983edeadb2b26f9b64ce912313d8cad29501a7587} \\
+Verifier config SHA-256 & \texttt{3742f0ab4cb644760b7b455fdbd350ffbc6849c7579bc719749a57e70815c729} \\
+Human reference & Frozen five-annotator Human Gold v1; inference-isolated \\
+Skywork baseline & \texttt{Skywork/Skywork-Reward-V2-Qwen3-4B}, revision \texttt{fd958fe} \\
+Direct judge & \texttt{qwen3:4b}, temperature 0, no retrieval, permutation seed \texttt{20260930} \\
+External protocol & SafeWorld 12 + CultureLLM/WVS 12 + ScopeBench 12; CARB 12 conditional on official data availability \\
+External selection seed & \texttt{20260930} \\
+Primary Vericult result & REPLAY after completed LIVE acquisition and evidence-manifest audit \\
+Experiment dates & Recorded in runtime/result manifests at execution time \\
 \bottomrule
 \end{longtable}
 
 \section*{Required execution order}
-The final execution order follows the experimental methodology chapter: validate the final architecture; choose the backbone on development material; freeze Vericult; generate and annotate v2 without Vericult-based filtering; acquire and freeze LIVE evidence; execute primary REPLAY evaluation; run independent baselines; run external validation; then compute comparative statistics and qualitative trace analysis. No semantic tuning is permitted after the verifier freeze.
+
+The frozen sequence is: run the local provider smoke gate; capture the runtime manifest; execute PLT LIVE; audit and hash evidence and traces; execute PLT REPLAY; execute Skywork; execute the direct judge; join the persisted outputs to Human Gold; evaluate the deterministic external samples; compute pre-declared metrics; and only then select trace-backed examples for qualitative discussion.
+
+No semantic prompt, rubric, decision rule, model, target/search budget or source-exclusion policy may be changed after the semantic freeze in response to evaluation outcomes. Execution-only failures may be rerun with unchanged code and configuration and must remain documented.
 
 \section*{Artifact inventory}
-The final submission archive should contain, or provide stable repository references to, v1 and v2 datasets, generator-provenance mappings, annotation exports, the experiment manifest, verifier traces, evidence schedules/snapshots, baseline outputs, external-validation selections, statistical-analysis outputs, figure-generation scripts, and the exact thesis source used for submission.
+
+The final reproducibility archive must preserve the canonical PLT file and manifest, raw and derived Human Gold artifacts, \texttt{final\_manifest.json}, \texttt{final\_vericult\_config.json}, runtime manifest, LIVE and REPLAY summaries, all candidate traces, the evidence freeze manifest and snapshots, Skywork/direct-judge outputs, deterministic external-validation selections, statistical-analysis outputs, figure-generation scripts and the exact thesis source used for submission.

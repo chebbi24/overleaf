@@ -1,6 +1,34 @@
 \chapter{Evaluation Results}
 \label{ch:results}
 
-\textbf{TODO --- populated only after the final architecture and backbone are frozen and all confirmatory predictions have been persisted.}
+\textbf{TODO after the frozen executions are complete. No result values are inserted before machine predictions are persisted.}
 
-This chapter will report: (i) backbone-selection results on the development/stress subset, (ii) PLT v2 candidate-level cultural assessment, (iii) Best-of-4 agreement with the v2 human reference, (iv) Skywork reward-model and direct-judge comparisons, (v) evidence coverage and contextual-fallback rates, (vi) technical reliability and runtime, and (vii) external-validation results on independently published cultural datasets.
+\section{Final Runtime and Execution Summary}
+Report the exact Ollama digest, execution dates, completion/failure counts and preserved artifact manifests.
+
+\section{Human Reference Characteristics}
+Report candidate-rating distributions, resolved/ambiguous winner counts and inter-rater agreement required for interpreting the controlled benchmark.
+
+\section{Single-Response Vericult Results}
+Report substantive cultural-label agreement, selective \texttt{insufficient\_evidence}, score behavior and false endorsement/rejection where the reference supports those comparisons.
+
+\section{Best-of-4 Results}
+Report exact winner agreement on resolved human-reference prompts and the frequencies of \texttt{no\_clear\_winner}, \texttt{no\_acceptable\_candidate}, \texttt{insufficient\_evidence} and technical failure.
+
+\section{Comparison with Skywork Reward V2}
+Report the independent reward-model results on the same canonical candidates.
+
+\section{Comparison with the Direct LLM Judge}
+Report the no-retrieval \texttt{qwen3:4b} judge under the frozen deterministic permutation.
+
+\section{Evidence Coverage and Selective Behavior}
+Report retrieval coverage, dimension abstention, candidate-level insufficiency, coverage comparability, target truncation and relevant runtime diagnostics.
+
+\section{External Validation}
+Report each external source separately, preserving native task semantics and the conditional status of CARB.
+
+\section{Statistical Comparisons}
+Report bootstrap confidence intervals, paired tests and effect sizes only where the pre-declared assumptions and cell sizes support them.
+
+\section{Results Summary}
+Summarize observations without performing the causal/error interpretation reserved for \cref{ch:discussion}.
