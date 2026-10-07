@@ -44,20 +44,27 @@ This design sacrifices a stronger internal holdout claim in exchange for transpa
 
 \section{Frozen Vericult Configuration}
 
-The semantic/code freeze is commit
-\texttt{200bca4575304795f491e76308d9be327ca269da}; the final repository snapshot on \texttt{main} is
-\texttt{09257316c52f6c82eab405dbf2f8e2aff37f9b97}. Vericult uses \texttt{qwen3:4b} through Ollama at temperature 0. The exact installed model digest is captured by the runtime preflight before LIVE evidence acquisition.
+The definitive semantic/code freeze is commit
+\texttt{286598d5eb642c3d632e7b756ccf1954fb922a13}; the final history-preserving repository snapshot on \texttt{main} is
+\texttt{cc2de515cc481a6ec82c8c3edd5611209b84e97b}. Vericult uses \texttt{qwen3:4b} through Ollama at temperature 0. The exact installed model digest is captured by the runtime preflight before LIVE evidence acquisition.
+
+The restored freeze was validated by GitHub Actions run \texttt{37608473802}. It incorporates the October 5 semantics previously validated at \texttt{c1944bb1df47a8668689c316e62563bdc700fbf3} but accidentally left on an unmerged branch.
 
 The frozen configuration is:
 \begin{itemize}
-    \item at most three material targets per response;
+    \item prompt-level \texttt{cultural\_applicability\_v1} before D01--D10 planning;
+    \item per-response \texttt{response\_assessability\_v1} before target extraction;
+    \item at most three material targets per assessable response;
     \item two initial neutral verification questions per retrievable target;
     \item \texttt{top\_k}=3 accepted retrieval documents per query;
     \item at most two retrieval rounds, where round two contains at most one gap-specific follow-up per target;
     \item one semantic repair retry and one transport retry;
+    \item deterministic span-ID normalization and Python-derived retrieval routing;
+    \item per-dimension scorer recovery after persistent batch-structure failure;
+    \item selective contextual fallback only for unresolved context-dependent recommendations;
     \item Tavily LIVE retrieval with advanced search depth;
     \item exclusion of the thesis repository and common annotation/result paths; and
-    \item selective 0/1/2/\texttt{abstain} scoring with the deterministic candidate/ranking rules specified in \cref{ch:verifier}.
+    \item selective 0/1/2/\texttt{abstain} scoring with explicit \texttt{not\_culturally\_applicable}, \texttt{not\_assessable} and \texttt{insufficient\_evidence} outcomes.
 \end{itemize}
 
 The frozen verifier configuration has SHA-256
@@ -72,8 +79,8 @@ The frozen verifier configuration has SHA-256
 \toprule
 \textbf{Component} & \textbf{Frozen value} \\
 \midrule
-Semantic/code revision & \texttt{200bca4575304795f491e76308d9be327ca269da} \\
-Repository freeze snapshot & \texttt{09257316c52f6c82eab405dbf2f8e2aff37f9b97} \\
+Semantic/code revision & \texttt{286598d5eb642c3d632e7b756ccf1954fb922a13} \\
+Repository freeze snapshot & \texttt{cc2de515cc481a6ec82c8c3edd5611209b84e97b} \\
 Pipeline & \texttt{cultverify-1.1.0} \\
 Backbone & Ollama \texttt{qwen3:4b}, temperature 0; exact runtime digest captured by preflight \\
 PLT input & 30 prompts $\times$ 4 candidates; frozen SHA-256 above \\
@@ -102,7 +109,7 @@ The reward model is not part of Vericult. Its scores never enter Vericult retrie
 
 \subsection{Direct LLM Judge}
 
-The direct judge uses \texttt{qwen3:4b} at temperature 0 with the same high-level D01--D10 rubric but without retrieval or the staged verifier architecture. It receives the prompt and four candidates in a deterministic permutation using seed \texttt{20260930}, returns A/B/C/D or one of the selective outcomes, and is mapped back to canonical candidate labels.
+The direct judge uses \texttt{qwen3:4b} at temperature 0 with the same high-level D01--D10 rubric but without retrieval or the staged verifier architecture. It receives the prompt and four candidates in a deterministic permutation using seed \texttt{20260930}. Its frozen decision space contains A/B/C/D plus \texttt{no\_clear\_winner}, \texttt{no\_acceptable\_candidate}, \texttt{insufficient\_evidence}, \texttt{not\_culturally\_applicable} and \texttt{not\_assessable}, which are mapped back to canonical candidate labels where applicable.
 
 Using the same semantic model family makes this an architectural comparison: differences cannot simply be attributed to a larger or more capable judge model.
 
@@ -125,15 +132,15 @@ Human reference & Candidate ratings + forced winner votes & Operational comparis
 \section{Pre-Freeze Cross-Dataset Empirical Validation}
 \label{sec:external120-pre-freeze}
 
-Before the final Vericult 1.1 semantic freeze, a separate cross-dataset run evaluated 120 source-grounded prompt--response pairs drawn evenly from six public cultural-alignment resources: CARE, Community Alignment, PLURAL, PACT, ThaiCLI and PRISM, with 20 records from each source \parencite{guo2025care,zhang2026cultivating,agarwal2026plural,borah2026pact,kim2025thaicli,kirk2024prism}. This experiment is distinct from the 30-prompt PLT Best-of-4 benchmark.
+Before the definitive repository freeze, a separate cross-dataset run evaluated 120 source-grounded prompt--response pairs drawn evenly from six public cultural-alignment resources: CARE, Community Alignment, PLURAL, PACT, ThaiCLI and PRISM, with 20 records from each source \parencite{guo2025care,zhang2026cultivating,agarwal2026plural,borah2026pact,kim2025thaicli,kirk2024prism}. This experiment is distinct from the 30-prompt PLT Best-of-4 benchmark.
 
 The corpus was intentionally \emph{positively selected}. CARE contributes reference answers; Community Alignment contributes human-preferred LLM responses; PLURAL contributes survey-derived preferred responses; PACT contributes culture-following candidates; ThaiCLI contributes human-reviewed chosen answers; and PRISM contributes the highest-rated opening-turn response for the selected conversations. Text was copied from the released source fields without paraphrase or translation. Consequently, this set is best interpreted as a cross-dataset positive-control and execution-robustness test rather than a balanced accuracy benchmark.
 
-The run predates the final Vericult 1.1 decision semantics. In particular, the exported results contain the earlier \texttt{cultural\_applicability\_v1} stage and the outcome \texttt{not\_culturally\_applicable}, which are not part of the frozen Vericult 1.1 label space. These results are therefore reported separately and are not pooled with the final frozen evaluation.
+Crucially, the final failed-item rerun was performed after the October 5 result-semantics repair that introduced \texttt{cultural\_applicability\_v1}, \texttt{not\_culturally\_applicable}, response assessability, robust span normalization and the selective fallback logic. Those same validated semantics were later restored into the definitive Vericult 1.1 freeze. The compact exported result rows do not themselves embed the exact Git commit, so the run is still reported as a pre-freeze empirical validation and is not pooled with the final frozen PLT execution; however, \texttt{not\_culturally\_applicable} is no longer treated as obsolete behavior.
 
-After rerunning initially failed items without changing the experiment inputs, 116 of 120 records completed. The four permanently unresolved records were 028 and 034 from Community Alignment and 084 from ThaiCLI, all due to transport \texttt{ReadTimeout}, and PACT record 076, which failed target extraction after bounded retry; trace inspection identified the malformed span identifier \texttt{S0:01}. The archived final merged result file therefore represents the post-rerun state, not the earlier partial checkpoint.
+After rerunning initially failed items without changing the experiment inputs, 116 of 120 records completed. The four permanently unresolved records were 028 and 034 from Community Alignment and 084 from ThaiCLI, all due to transport \texttt{ReadTimeout}, and PACT record 076, which failed target extraction after bounded retry; trace inspection identified the malformed span identifier \texttt{S0:01}.
 
-The exact corpus and merged results are preserved in the code repository on branch \texttt{archive/external-120-pre-freeze}, commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. The archive also records machine-readable aggregate statistics and explicitly marks this run as pre-freeze evidence rather than the final external benchmark.
+The exact corpus and merged results are preserved on repository branch \texttt{archive/external-120-pre-freeze}, commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. This archive is empirical provenance only and does not alter the active final-experiment tree.
 
 \section{External Validation Protocol}
 
@@ -167,16 +174,16 @@ External sources never provide labels, expected errors or benchmark metadata to 
 The final analysis reports four metric families.
 
 \paragraph{Absolute candidate assessment.}
-For candidate-level human or benchmark references, Vericult's substantive cultural labels and 0--100 score are compared with the available reference. \texttt{insufficient\_evidence} is reported separately as selective coverage rather than coerced into a correctness class.
+For candidate-level human or benchmark references, the three substantive cultural labels and available public score are compared with the reference where such a comparison is meaningful. \texttt{not\_culturally\_applicable}, \texttt{not\_assessable} and \texttt{insufficient\_evidence} are reported as distinct selective outcomes rather than coerced into correctness classes. Because \texttt{vericult\_score} is suppressed whenever any applicable dimension abstains, numeric-score analyses use only cases for which the public score is defined.
 
 \paragraph{Best-of-4 preference assessment.}
-For PLT prompts with a resolved human majority, exact winner agreement is reported. \texttt{no\_clear\_winner}, \texttt{no\_acceptable\_candidate}, \texttt{insufficient\_evidence} and technical failure remain separate outcomes. The forced human winner is not treated as evidence that the selected candidate is absolutely appropriate.
+For PLT prompts with a resolved human majority, exact winner agreement is reported. Candidate winners, \texttt{no\_clear\_winner}, \texttt{no\_acceptable\_candidate}, \texttt{insufficient\_evidence}, \texttt{not\_culturally\_applicable}, \texttt{not\_assessable} and technical failure remain separate outcomes. The forced human winner is not treated as evidence that the selected candidate is absolutely appropriate.
 
 \paragraph{Selective and evidence behavior.}
-The analysis reports dimension abstention, candidate-level \texttt{insufficient\_evidence}, evidence coverage, coverage comparability, retrieval usage and target truncation. Selective coverage is part of verifier behavior, not a nuisance value to be silently dropped.
+The analysis reports applicability exits, response-assessability exits, dimension abstention, candidate-level \texttt{insufficient\_evidence}, evidence coverage, coverage comparability, retrieval usage, target truncation and contextual-fallback frequency. Selective behavior is part of verifier performance, not a nuisance value to be silently dropped.
 
 \paragraph{Engineering reliability.}
-Completion rate, failure stage, retrieval calls and wall-clock runtime are reported because a verifier that is accurate only on completed cases is not practically equivalent to one that reliably finishes.
+Completion rate, failure stage, retrieval calls, structural scorer recovery and wall-clock runtime are reported because a verifier that is accurate only on completed cases is not practically equivalent to one that reliably finishes.
 
 \section{Statistical Analysis}
 
