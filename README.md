@@ -23,3 +23,9 @@ Chapters 1–6 and 9 plus the four appendices are intended to be final before re
 The bibliography is consolidated in `references.bib`. Runtime-only information such as the exact local Ollama digest and execution dates is captured by the frozen preflight/results manifests and inserted after execution; it does not reopen the semantic methodology.
 
 Compile with an Overleaf/Biber-capable LaTeX environment using `main.tex`.
+
+## Archived empirical cross-dataset validation
+
+The thesis additionally reports a pre-freeze 120-item cross-dataset validation (20 each from CARE, Community Alignment, PLURAL, PACT, ThaiCLI and PRISM). The exact corpus and final post-rerun result export are preserved on `chebbi24/cultural-verification-thesis` branch `archive/external-120-pre-freeze`, commit `3a7bd8088ca1f9cabc8b7945792430cc501c160d`.
+
+This experiment is treated as positive-control/robustness evidence and is not pooled with final Vericult 1.1 results. Its final post-rerun state is 116/120 completed; the four unresolved cases are documented explicitly in Chapter 7 and the archive summary.
