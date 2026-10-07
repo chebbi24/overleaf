@@ -1,7 +1,7 @@
 \chapter{Evaluation Results}
 \label{ch:results}
 
-\textbf{The final frozen PLT/baseline and post-freeze external results remain to be inserted after execution. The pre-freeze cross-dataset validation below is already fixed and is reported separately because it used an earlier Vericult revision.}
+\textbf{The final frozen PLT/baseline and post-freeze external results remain to be inserted after execution. The cross-dataset validation below is already fixed and is reported separately because it was executed before the definitive repository freeze, although its repaired result semantics are the same semantics now restored into final Vericult 1.1.}
 
 \section{Pre-Freeze Cross-Dataset Validation Results}
 \label{sec:external120-results}
@@ -37,7 +37,7 @@ PRISM & 20/20 & 17 & 1 & 2 & 86.4 \\
 
 Because the corpus deliberately contains source-endorsed responses, the absence of a \texttt{culturally\_inappropriate} decision among all 102 substantively scored cases is directionally consistent with the source-side signal. This is a useful sanity check that Vericult was not systematically rejecting reference, preferred or chosen responses across unrelated datasets and languages. It is \emph{not} an accuracy estimate: the six datasets encode different notions of a desirable response, and PACT in particular models a culture--preference trade-off rather than a universal cultural ground truth.
 
-The distribution also shows that Vericult did not simply copy the positive source signal. Most source-endorsed responses were rated only partially appropriate rather than fully appropriate, and 14 completed cases were selective or non-applicable under the earlier architecture. The verifier therefore remained stricter than a binary reproduction of the source preference.
+The distribution also shows that Vericult did not simply copy the positive source signal. Most source-endorsed responses were rated only partially appropriate rather than fully appropriate, and 14 completed cases produced selective or non-applicability outcomes. These outcomes are part of the restored final semantics, not artifacts of an obsolete label space.
 
 PRISM permits a limited fine-grained comparison because the archived records include the original response rating. For the 17 PRISM records with a numeric Vericult score, Pearson correlation between the PRISM response score and Vericult score was $r=-0.203$, and Spearman rank correlation was $\rho=-0.193$. The small, restricted positive-score sample makes these estimates unstable, but they provide no evidence that the Vericult score is calibrated to reproduce PRISM's human rating scale. The empirical support from this run is therefore best stated as \emph{coarse source consistency plus high execution completion}, not human-score calibration or benchmark accuracy.
 
@@ -48,7 +48,7 @@ The four unresolved items were:
     \item record 076, PACT: \texttt{target\_extractor\_v1} remained structurally invalid after bounded retry, later traced to malformed span ID \texttt{S0:01}.
 \end{itemize}
 
-These results provide empirical evidence that the staged verifier could operate across heterogeneous cultural datasets and multilingual inputs while also exposing technical failure modes that motivated later reliability work. Since the run predates the final Vericult 1.1 semantics, it is treated as supporting engineering and construct evidence rather than the final answer to RQ1--RQ3.
+These results provide empirical evidence that the staged verifier could operate across heterogeneous cultural datasets and multilingual inputs while also exposing technical failure modes that motivated reliability work. The run occurred before the definitive repository freeze, so it remains supporting engineering and construct evidence rather than the final answer to RQ1--RQ3; however, its applicability/non-applicability semantics are now part of the definitive verifier.
 
 \section{Final Runtime and Execution Summary}
 Report the exact Ollama digest, execution dates, completion/failure counts and preserved artifact manifests.
@@ -57,7 +57,7 @@ Report the exact Ollama digest, execution dates, completion/failure counts and p
 Report candidate-rating distributions, resolved/ambiguous winner counts and inter-rater agreement required for interpreting the controlled benchmark.
 
 \section{Single-Response Vericult Results}
-Report substantive cultural-label agreement, selective \texttt{insufficient\_evidence}, score behavior and false endorsement/rejection where the reference supports those comparisons.
+Report substantive cultural-label agreement, \texttt{not\_culturally\_applicable}, \texttt{not\_assessable}, \texttt{insufficient\_evidence}, score behavior and false endorsement/rejection where the reference supports those comparisons.
 
 \section{Best-of-4 Results}
 Report exact winner agreement on resolved human-reference prompts and the frequencies of \texttt{no\_clear\_winner}, \texttt{no\_acceptable\_candidate}, \texttt{insufficient\_evidence} and technical failure.
@@ -69,7 +69,7 @@ Report the independent reward-model results on the same canonical candidates.
 Report the no-retrieval \texttt{qwen3:4b} judge under the frozen deterministic permutation.
 
 \section{Evidence Coverage and Selective Behavior}
-Report retrieval coverage, dimension abstention, candidate-level insufficiency, coverage comparability, target truncation and relevant runtime diagnostics.
+Report applicability exits, assessability exits, retrieval coverage, dimension abstention, candidate-level insufficiency, contextual-fallback frequency, coverage comparability, target truncation and relevant runtime diagnostics.
 
 \section{External Validation}
 Report each external source separately, preserving native task semantics and the conditional status of CARB.
