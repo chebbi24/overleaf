@@ -14,13 +14,14 @@ This appendix records the frozen pre-results implementation and experiment contr
 \midrule
 \endhead
 Implementation repository & \texttt{chebbi24/cultural-verification-thesis} \\
-Semantic/code freeze & \texttt{200bca4575304795f491e76308d9be327ca269da} \\
-Repository freeze snapshot & \texttt{09257316c52f6c82eab405dbf2f8e2aff37f9b97} on \texttt{main} and \texttt{freeze/vericult-v1.1-thesis} \\
+Semantic/code freeze & \texttt{286598d5eb642c3d632e7b756ccf1954fb922a13} \\
+Repository freeze snapshot & \texttt{cc2de515cc481a6ec82c8c3edd5611209b84e97b} on \texttt{main}, \texttt{agent/final-experiment-ready} and \texttt{freeze/vericult-v1.1-thesis} \\
 Pipeline version & \texttt{cultverify-1.1.0} \\
 Validation environment & Python 3.12 with dependencies pinned in \texttt{requirements.lock} \\
-Final CI & GitHub Actions run \texttt{37603060612}: install, compile, full pytest suite, Ruff lint and Ruff format all passed \\
+Final CI & GitHub Actions run \texttt{37608473802}: install, compile, full pytest suite, Ruff lint and Ruff format all passed \\
 Runtime rubric & \texttt{src/cultverify/resources/rubric.csv}; reproduced in \cref{app:rubric} \\
 Semantic prompts & \texttt{src/cultverify/prompts.py}; contracts summarized in \cref{app:prompts} \\
+Restoration provenance & October 5 repair \texttt{c1944bb1df47a8668689c316e62563bdc700fbf3}, CI \texttt{37336670390}; selectively restored before definitive freeze \\
 Verifier backbone & Ollama \texttt{qwen3:4b}, temperature 0 \\
 Exact Ollama digest & Captured by \texttt{scripts/preflight\_final\_experiment.py} immediately before LIVE acquisition \\
 Semantic retry budget & One repair retry; one transport retry \\
@@ -53,7 +54,7 @@ The final reproducibility archive must preserve the canonical PLT file and manif
 
 \section*{Archived pre-freeze cross-dataset experiment}
 
-The earlier 120-item cross-dataset validation is preserved separately from the frozen Vericult 1.1 experiment on repository branch \texttt{archive/external-120-pre-freeze}, commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. The archive contains:
+The 120-item cross-dataset validation is preserved separately from the active final-experiment tree on repository branch \texttt{archive/external-120-pre-freeze}, commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. Its final failed-item rerun used the October 5 repaired result semantics that have now been restored into final Vericult 1.1. The archive contains:
 
 \begin{itemize}
     \item \texttt{data/evaluation/external\_120\_pre\_freeze/prompt\_response\_pairs\_120.txt}: the exact source-grounded corpus;
@@ -62,4 +63,4 @@ The earlier 120-item cross-dataset validation is preserved separately from the f
     \item \texttt{README.md}: interpretation and version-separation notes.
 \end{itemize}
 
-This branch is archival only. The active Vericult 1.1 semantic freeze remains unchanged.
+This branch is archival only. It preserves empirical inputs/results and does not change the active semantic freeze. The compact result export does not embed the exact runtime Git SHA, so the run remains identified as pre-freeze empirical validation even though its result semantics match the restored final verifier.
