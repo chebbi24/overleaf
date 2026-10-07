@@ -50,3 +50,16 @@ No semantic prompt, rubric, decision rule, model, target/search budget or source
 \section*{Artifact inventory}
 
 The final reproducibility archive must preserve the canonical PLT file and manifest, raw and derived Human Gold artifacts, \texttt{final\_manifest.json}, \texttt{final\_vericult\_config.json}, runtime manifest, LIVE and REPLAY summaries, all candidate traces, the evidence freeze manifest and snapshots, Skywork/direct-judge outputs, deterministic external-validation selections, statistical-analysis outputs, figure-generation scripts and the exact thesis source used for submission.
+
+\section*{Archived pre-freeze cross-dataset experiment}
+
+The earlier 120-item cross-dataset validation is preserved separately from the frozen Vericult 1.1 experiment on repository branch \texttt{archive/external-120-pre-freeze}, commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. The archive contains:
+
+\begin{itemize}
+    \item \texttt{data/evaluation/external\_120\_pre\_freeze/prompt\_response\_pairs\_120.txt}: the exact source-grounded corpus;
+    \item \texttt{data/evaluation/external\_120\_pre\_freeze/results\_final\_merged.jsonl}: the final post-rerun result export with 120 records;
+    \item \texttt{data/evaluation/external\_120\_pre\_freeze/summary.json}: aggregate counts, per-dataset statistics and unresolved-case diagnostics; and
+    \item \texttt{README.md}: interpretation and version-separation notes.
+\end{itemize}
+
+This branch is archival only. The active Vericult 1.1 semantic freeze remains unchanged.
