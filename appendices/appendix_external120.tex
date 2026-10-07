@@ -26,11 +26,11 @@ PRISM & 20 & Highest-rated opening-turn LLM response among the selected source c
 
 After rerunning failed records, 116 of 120 items completed. The four unresolved IDs are 028, 034, 076 and 084. Three failures were provider transport timeouts; record 076 was a structured-output failure at target extraction.
 
-Of the 116 completed cases, 102 received a substantive numeric cultural assessment: 22 appropriate and 80 partially appropriate. Six were insufficient and eight were marked not culturally applicable under the earlier architecture. No substantively scored response was labelled culturally inappropriate. The mean normalized score over the 102 numeric cases was 87.24; mean evidence coverage over completed cases with a defined coverage value was 71.5\%.
+Of the 116 completed cases, 102 received a substantive numeric cultural assessment: 22 appropriate and 80 partially appropriate. Six were insufficient and eight were marked \texttt{not\_culturally\_applicable}. That outcome is part of the restored final Vericult semantics, not an obsolete label. No substantively scored response was labelled culturally inappropriate. The mean normalized score over the 102 numeric cases was 87.24; mean evidence coverage over completed cases with a defined coverage value was 71.5\%.
 
 \section*{Interpretation}
 
-The corpus was intentionally positively selected from its source datasets. Agreement with that selection therefore provides a \emph{sanity check} rather than an accuracy estimate. The result shows that the earlier Vericult pipeline could complete heterogeneous multilingual cases and generally avoid rejecting source-endorsed responses, while still assigning mostly partial rather than perfect scores.
+The corpus was intentionally positively selected from its source datasets. Agreement with that selection therefore provides a \emph{sanity check} rather than an accuracy estimate. The result shows that the repaired Vericult pipeline could complete heterogeneous multilingual cases and generally avoid rejecting source-endorsed responses, while still assigning mostly partial rather than perfect scores. The same repaired outcome semantics were later restored into the definitive freeze.
 
 The PRISM subset additionally demonstrates why these outputs must not be interpreted as calibrated human ratings. Across 17 records with both numeric values, Pearson correlation with the archived PRISM source score was $-0.203$ and Spearman correlation was $-0.193$. The archive therefore supports coarse consistency and technical feasibility, not fine-grained preference-score prediction.
 
