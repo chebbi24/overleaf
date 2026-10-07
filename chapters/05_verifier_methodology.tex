@@ -45,7 +45,7 @@ The resulting outcome space distinguishes four concepts that earlier iterations 
 
 \section{Semantic Backbone and Model Separation}
 
-All semantic stages use one explicitly configured backbone model. For the thesis freeze this backbone is \texttt{qwen3:4b} served locally through Ollama at temperature 0. The pipeline rejects configuration mismatch between the model adapter and verifier configuration, preventing hidden stage-specific substitution. The same model performs context extraction, dimension planning, target selection, verification-question generation, query rewriting, source classification, memo synthesis, follow-up planning, target comparison and dimension scoring.
+All semantic stages use one explicitly configured backbone model. For the thesis freeze this backbone is \texttt{qwen3:4b} served locally through Ollama at temperature 0. The pipeline rejects configuration mismatch between the model adapter and verifier configuration, preventing hidden stage-specific substitution. The same model performs context extraction, cultural-applicability classification, dimension planning, response assessability, target selection, verification-question generation, query rewriting, source classification, memo synthesis, follow-up planning, target comparison and dimension scoring. It also performs the single-dimension structural recovery stage and the narrowly scoped contextual fallback when those branches are invoked.
 
 The semantic backbone is independent of the comparison systems. Skywork Reward V2 never enters the verifier. The direct LLM judge uses the same \texttt{qwen3:4b} family intentionally, but through a separate one-shot no-retrieval baseline, allowing the experiment to test architectural structure rather than model identity alone.
 
@@ -57,17 +57,29 @@ The first stage extracts a \texttt{ContextFrame} from the prompt containing sett
 
 This distinction between explicit context and inferred context is methodologically important. Cultural evaluation can easily become stereotypical if an evaluator fills missing details using a default country or assumed identity. Vericult instead prefers missing context to fabricated context. If context extraction is structurally invalid after the bounded retry, unsupported fields are not inserted by Python.
 
+\section{Cultural-Applicability Gate}
+
+After context extraction, \texttt{cultural\_applicability\_v1} asks whether culturally situated reasoning is materially required to evaluate the task. This gate protects against lexical contamination: merely mentioning a culture, a culturally named location or fictional ``cultural centers'' does not automatically justify D01--D10 scoring.
+
+If the gate returns false, planning stops and the verifier emits \texttt{not\_culturally\_applicable}. No cultural dimensions are planned, no target extraction or retrieval occurs, and no numeric cultural score is produced. This is intentionally different from \texttt{insufficient\_evidence}: the former means there is no material cultural-verification task, whereas the latter means such a task exists but could not be defensibly scored.
+
 \section{Prompt-Level D01--D10 Planning}
 
-The dimension planner receives the prompt, validated context frame and complete D01--D10 rubric. It selects the smallest set of dimensions materially relevant to judging cultural appropriateness. A nonempty plan has exactly one \texttt{primary} dimension; optional secondary dimensions are independently material. Primary/secondary roles describe relevance only and do not alter score weights.
+Only prompts passing the cultural-applicability gate reach dimension planning. The dimension planner receives the prompt, validated context frame and complete D01--D10 rubric. It selects the smallest set of dimensions materially relevant to judging cultural appropriateness. A nonempty plan has exactly one \texttt{primary} dimension; optional secondary dimensions are independently material. Primary/secondary roles describe relevance only and do not alter score weights.
 
-In Best-of-4 mode, context extraction and dimension planning are performed once from the shared prompt before any candidate is evaluated. All four candidates therefore use the same prompt-level frame. This design improves comparability and prevents a candidate from receiving a different rubric merely because its wording makes another cultural topic salient. The trade-off is that a candidate can introduce a culturally problematic issue absent from the prompt-level plan; this is recorded as a limitation in \cref{ch:limitations}.
+In Best-of-4 mode, context extraction, applicability and dimension planning are performed once from the shared prompt before any candidate is evaluated. All four candidates therefore use the same prompt-level frame and plan. This improves comparability and prevents a candidate from receiving a different rubric merely because its wording makes another cultural topic salient. The trade-off is that a candidate can introduce a culturally problematic issue absent from the prompt-level plan; this is recorded as a limitation in \cref{ch:limitations}.
+
+\section{Response-Assessability Gate}
+
+For a culturally applicable prompt, each candidate response is checked by \texttt{response\_assessability\_v1} before target extraction. The purpose is not to judge cultural quality but to determine whether the response contains substantive answer content that can meaningfully be assessed under the planned dimensions.
+
+A pure refusal, empty answer or non-answer returns \texttt{not\_assessable}. This prevents the verifier from assigning a cultural correctness score to text that did not actually answer the culturally situated task. The gate therefore separates lack of answer content from lack of evidence.
 
 \section{Deterministic Response Spans and Material Targets}
 
-A central engineering failure discovered during an early LIVE stress run concerned exact quotation. The initial target extractor asked the language model both to identify a material cultural unit and reproduce its exact response quotation. Semantically correct selections could still fail strict validation after punctuation, Markdown or wording changed. This was a mechanical copying failure rather than evidence that the selected cultural issue was wrong.
+A central engineering failure discovered during LIVE stress testing concerned exact quotation. Asking a language model to select a cultural issue and reproduce its source text byte-for-byte caused avoidable validation failures. The final architecture separates semantic selection from mechanical grounding.
 
-The frozen architecture separates semantic selection from mechanical grounding. Python deterministically segments the response into stable span identifiers \texttt{S001}, \texttt{S002}, and so forth. The target extractor receives the span table and returns only a \texttt{span\_id}, proposition, epistemic type, dimension IDs, materiality and retrieval flag. Python then resolves the identifier back to the original substring and attaches that exact text as \texttt{response\_quote}. Unknown span IDs fail validation.
+Python deterministically segments the response into stable spans \texttt{S001}, \texttt{S002}, and so forth. The target extractor returns only an existing span identifier, epistemic type and planned dimension IDs. Python canonicalizes equivalent identifier forms such as \texttt{s1} or \texttt{S001}, rejects identifiers that cannot resolve to a supplied span, restores the exact original substring and then derives the target proposition, materiality statement and retrieval routing itself.
 
 \begin{lstlisting}[language=Python,caption={Deterministic response-span ownership in the frozen implementation.},label={lst:span-grounding}]
 spans = response_spans(response)
@@ -77,11 +89,12 @@ batch = session.call(
     TargetSelectionBatch,
     lambda b: validate_target_selections(b, spans, plan, max_targets),
 )
-span_text = {span["span_id"]: span["text"] for span in spans}
-response_quote = span_text[target.span_id]
+span_id = canonical_span_id(target.span_id, spans)
+response_quote = span_text[span_id]
+retrieval = target.epistemic_type in {EXTERNAL, NORM, RECOMMENDATION}
 \end{lstlisting}
 
-At most three material targets are retained. Targets are intended to capture decision-relevant content rather than every sentence. Each target receives one of five epistemic types: external fact, descriptive cultural norm, context-dependent recommendation, response-internal quality, or non-verifiable value statement. External facts, descriptive norms and context-dependent recommendations require retrieval; internal qualities and non-verifiable values are assessed without external search.
+At most three material targets are retained. Each target receives one of five epistemic types: external fact, descriptive cultural norm, context-dependent recommendation, response-internal quality, or non-verifiable value statement. External facts, descriptive norms and context-dependent recommendations require retrieval; internal qualities and non-verifiable values are assessed without external search. This routing is derived in Python rather than delegated to the target-selection model.
 
 \section{Neutral Verification Questions}
 
