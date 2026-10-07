@@ -17,6 +17,12 @@ Abstention reduces forced certainty but introduces a coverage trade-off. A conse
 
 Most importantly, the PLT benchmark was visible during engineering and supported architecture debugging and backbone selection. Its final machine evaluation is frozen against Human Gold, but it is not a fully independent held-out test of the entire design process. This limits causal claims that design choices generalize beyond the project benchmark.
 
+\section{Interpretation of the Pre-Freeze Cross-Dataset Run}
+
+The 120-item pre-freeze experiment adds breadth but does not remove the internal-validity concerns above. Its six source datasets contributed responses that had already been selected as references, preferences, chosen answers, culture-following candidates or highly rated outputs. The finding that none of the 102 substantively scored cases was labelled culturally inappropriate is therefore a positive-control consistency result, not evidence of sensitivity to culturally bad answers.
+
+The result also belongs to an earlier architecture revision that exposed \texttt{not\_culturally\_applicable}. It cannot be pooled numerically with final Vericult 1.1 results. The weak negative PRISM score correlation further cautions against interpreting the 0--100 Vericult aggregate as a calibrated human-preference score. Its value in the thesis is instead threefold: demonstrating cross-source execution, checking coarse consistency with positive source signals, and documenting concrete failure modes that informed the final reliability design.
+
 \section{External Validity}
 
 The controlled PLT benchmark contains only 30 prompts and 120 candidate responses. It intentionally overrepresents culturally problematic responses and cannot represent the full space of languages, regions, religions, institutions, value systems or interaction types relevant to cultural appropriateness. Its generator provenance also does not represent the distribution of all contemporary production LLMs.
