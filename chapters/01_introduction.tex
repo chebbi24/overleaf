@@ -18,15 +18,19 @@ The system developed in this thesis is \textbf{Vericult}, a standalone post-hoc 
 
 \section{Problem Statement}
 
-Given a prompt $p$ and generated response $r$, Vericult should determine which cultural dimensions are relevant, identify materially important response content, acquire external evidence for claims that are meaningfully retrievable, and produce an interpretable assessment of how culturally appropriate the response is. The frozen implementation exposes three substantive cultural labels---\texttt{culturally\_appropriate}, \texttt{partially\_culturally\_appropriate}, and \texttt{culturally\_inappropriate}---plus the selective outcome \texttt{insufficient\_evidence} when no planned dimension can be defensibly scored. Technical execution failure is represented separately through run status and is never silently converted into a semantic judgment.
+Given a prompt $p$ and generated response $r$, Vericult should first determine whether the task actually requires a cultural appropriateness judgment. If cultural reasoning is only incidental, the system returns \texttt{not\_culturally\_applicable} rather than manufacturing D01--D10 scores. For culturally applicable prompts it plans the relevant dimensions, then checks whether the response contains substantive culturally assessable answer content. A pure refusal or non-answer returns \texttt{not\_assessable}. Only then does the verifier identify materially important response content, retrieve evidence where appropriate and produce a cultural assessment.
+
+For an applicable and assessable response, the substantive cultural labels are \texttt{culturally\_appropriate}, \texttt{partially\_culturally\_appropriate} and \texttt{culturally\_inappropriate}. The selective outcome \texttt{insufficient\_evidence} is reserved for an applicable, assessable response for which no defensible scored cultural basis can be established. Technical execution failure is represented separately through run status and is never silently converted into a semantic outcome.
 
 This problem differs from ordinary factual verification in several ways. First, cultural interpretation depends on explicit context. A statement about etiquette, language, religion or institutions may be appropriate only for a particular relationship, setting, location or time. Inferring unstated demographic or geographic facts can itself introduce bias, so the verifier distinguishes supported context from assumptions.
 
-Second, not every culturally relevant issue is externally verifiable. Some response properties concern internal compliance with the user's request, interpersonal pragmatics or plural values. Retrieval can describe evidence about such issues, but it cannot turn every contextual judgment into an objective fact. The architecture therefore distinguishes retrievable targets from response-internal or non-verifiable targets and permits abstention where the available basis remains genuinely insufficient.
+Second, not every prompt containing cultural vocabulary is genuinely a cultural-verification task, and not every response supplies assessable answer content. Separating applicability and assessability prevents these edge cases from being mislabeled as evidence failure.
 
-Third, retrieval can introduce its own bias and contamination. If candidate wording remains visible while evidence is gathered, search may become oriented toward proving or disproving that candidate. Benchmark repositories or leaked annotations may also enter the evidence set. Vericult therefore uses a structural candidate-blind evidence stage, bounded retrieval, provenance classification, explicit exclusions and immutable evidence snapshots.
+Third, not every culturally relevant issue is externally verifiable. Some response properties concern internal compliance with the user's request, interpersonal pragmatics or plural values. Retrieval can describe evidence about such issues, but it cannot turn every contextual judgment into an objective fact. The architecture therefore distinguishes retrievable targets from response-internal or non-verifiable targets and permits abstention where the available basis remains genuinely insufficient.
 
-Fourth, a verifier intended for practical use must distinguish semantic uncertainty from technical failure. Missing evidence should not silently become a positive or negative cultural conclusion, while provider errors, malformed structured output or broken execution must not be disguised as cultural judgments. Vericult therefore records evidence sufficiency, abstention and technical status separately.
+Fourth, retrieval can introduce its own bias and contamination. If candidate wording remains visible while evidence is gathered, search may become oriented toward proving or disproving that candidate. Benchmark repositories or leaked annotations may also enter the evidence set. Vericult therefore uses a structural candidate-blind evidence stage, bounded retrieval, provenance classification, explicit exclusions and immutable evidence snapshots.
+
+Finally, missing evidence, non-applicability, non-assessability and technical failure are different states. The final architecture keeps them separate rather than treating every unresolved case as \texttt{insufficient\_evidence}.
 
 \section{Research Gap}
 
@@ -37,23 +41,24 @@ The practical gap addressed here is therefore a standalone verifier that combine
 \section{Research Questions}
 
 \begin{description}
-    \item[\textbf{RQ1}] How reliably can Vericult assess the cultural appropriateness of an arbitrary prompt--response pair using the D01--D10 framework while preserving uncertainty through explicit abstention?
+    \item[\textbf{RQ1}] How reliably can Vericult assess arbitrary prompt--response pairs using the D01--D10 framework while distinguishing non-applicability, non-assessability and evidence insufficiency?
     \item[\textbf{RQ2}] In a controlled Best-of-4 setting, to what extent does Vericult identify the response preferred by human annotators, and how does this compare with an independent reward model and a direct LLM judge?
     \item[\textbf{RQ3}] How well does the frozen verifier transfer to independently published cultural-evaluation settings represented by the preregistered external protocol, including SafeWorld, CultureLLM/World Values Survey, ScopeBench and CARB where official item-level data are available?
-    \item[\textbf{RQ4}] Which failure modes arise from context planning, target extraction, retrieval, evidence synthesis, abstention and final scoring, and what do these failures imply for future cultural-verification systems?
+    \item[\textbf{RQ4}] Which failure modes arise from applicability/assessability gating, context and dimension planning, target extraction, retrieval, evidence synthesis, selective fallback, abstention and final scoring, and what do these failures imply for future cultural-verification systems?
 \end{description}
 
-RQ1 reflects the intended single-response deployment scenario. RQ2 uses Best-of-4 as a controlled preference-evaluation instrument and bridge to reward-model research. RQ3 tests transfer after the semantic freeze rather than constructing additional project-specific examples. RQ4 treats failures and abstentions as empirical evidence about the architecture rather than as cases to be tuned away after freeze.
+RQ1 reflects the intended single-response deployment scenario and explicitly treats the reject options as part of correct verifier behavior rather than as missing predictions. RQ2 uses Best-of-4 as a controlled preference-evaluation instrument and bridge to reward-model research. RQ3 tests transfer after the semantic freeze. RQ4 treats failures and selective outcomes as empirical evidence about the architecture rather than as cases to be tuned away after freeze.
 
 \section{Contributions}
 
 \begin{itemize}
     \item \textbf{A literature-grounded D01--D10 operational framework} spanning everyday practices, pragmatics, etiquette, values, institutions, religion, family and gender, work and civic life, heritage, and identity/intergroup relations.
-    \item \textbf{A standalone evidence-grounded verifier architecture} that separates prompt context, cultural-dimension planning, deterministic response-span grounding, bounded evidence acquisition, frozen evidence comparison and final cultural scoring.
-    \item \textbf{A selective decision mechanism} in which dimensions may abstain when a defensible score cannot be established and a candidate with no scored cultural basis becomes \texttt{insufficient\_evidence}, preserving uncertainty instead of fabricating a 0/1/2 judgment.
+    \item \textbf{A standalone evidence-grounded verifier architecture} that separates prompt context, cultural applicability, response assessability, cultural-dimension planning, deterministic response-span grounding, bounded evidence acquisition, frozen evidence comparison and final cultural scoring.
+    \item \textbf{Explicit selective semantics} distinguishing \texttt{not\_culturally\_applicable}, \texttt{not\_assessable} and \texttt{insufficient\_evidence}, while retaining dimension-level \texttt{abstain} instead of fabricating 0/1/2 judgments.
+    \item \textbf{A narrow contextual-reasoning fallback} for evidence-unresolved context-dependent recommendations only; unresolved external facts and descriptive norms remain eligible for abstention.
     \item \textbf{A reproducible evidence layer} with source typing, leakage controls, LIVE acquisition, REPLAY over frozen snapshots, stable identifiers and trace validation.
     \item \textbf{A controlled Best-of-4 evaluation mode} used for comparison with five-annotator human preferences, Skywork Reward V2 and a direct LLM judge, without making ranking the primary product interface.
-    \item \textbf{A staged empirical protocol} separating engineering/development exposure on the project benchmark from the frozen machine evaluation and a post-freeze external-validation protocol over independently published cultural resources.
+    \item \textbf{A staged empirical program} including the six-source 120-item positive-control run, the frozen PLT comparison and a post-freeze external-validation protocol.
 \end{itemize}
 
 \section{Thesis Structure}
