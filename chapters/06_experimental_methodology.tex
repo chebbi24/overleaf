@@ -122,6 +122,19 @@ Human reference & Candidate ratings + forced winner votes & Operational comparis
 \end{tabularx}
 \end{table}
 
+\section{Pre-Freeze Cross-Dataset Empirical Validation}
+\label{sec:external120-pre-freeze}
+
+Before the final Vericult 1.1 semantic freeze, a separate cross-dataset run evaluated 120 source-grounded prompt--response pairs drawn evenly from six public cultural-alignment resources: CARE, Community Alignment, PLURAL, PACT, ThaiCLI and PRISM, with 20 records from each source \parencite{guo2025care,zhang2026cultivating,agarwal2026plural,borah2026pact,kim2025thaicli,kirk2024prism}. This experiment is distinct from the 30-prompt PLT Best-of-4 benchmark.
+
+The corpus was intentionally \emph{positively selected}. CARE contributes reference answers; Community Alignment contributes human-preferred LLM responses; PLURAL contributes survey-derived preferred responses; PACT contributes culture-following candidates; ThaiCLI contributes human-reviewed chosen answers; and PRISM contributes the highest-rated opening-turn response for the selected conversations. Text was copied from the released source fields without paraphrase or translation. Consequently, this set is best interpreted as a cross-dataset positive-control and execution-robustness test rather than a balanced accuracy benchmark.
+
+The run predates the final Vericult 1.1 decision semantics. In particular, the exported results contain the earlier \texttt{cultural\_applicability\_v1} stage and the outcome \texttt{not\_culturally\_applicable}, which are not part of the frozen Vericult 1.1 label space. These results are therefore reported separately and are not pooled with the final frozen evaluation.
+
+After rerunning initially failed items without changing the experiment inputs, 116 of 120 records completed. The four permanently unresolved records were 028 and 034 from Community Alignment and 084 from ThaiCLI, all due to transport \texttt{ReadTimeout}, and PACT record 076, which failed target extraction after bounded retry; trace inspection identified the malformed span identifier \texttt{S0:01}. The archived final merged result file therefore represents the post-rerun state, not the earlier partial checkpoint.
+
+The exact corpus and merged results are preserved in the code repository on branch \texttt{archive/external-120-pre-freeze}, commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. The archive also records machine-readable aggregate statistics and explicitly marks this run as pre-freeze evidence rather than the final external benchmark.
+
 \section{External Validation Protocol}
 
 External validation is frozen independently of the controlled PLT set in
