@@ -1,0 +1,39 @@
+\chapter{Pre-Freeze Cross-Dataset Validation Corpus}
+\label{app:external120}
+
+This appendix summarizes the archived 120-item cross-dataset experiment reported in \cref{sec:external120-pre-freeze,sec:external120-results}. The exact prompt and response text is preserved in the repository archive rather than reproduced in full in the printed thesis.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Composition and source-side signal of the archived 120-item corpus.}
+\label{tab:external120-source}
+\begin{tabularx}{\textwidth}{p{3.0cm}p{1.2cm}X}
+\toprule
+\textbf{Dataset} & \textbf{$n$} & \textbf{Archived response selection} \\
+\midrule
+CARE & 20 & Source reference answer \parencite{guo2025care} \\
+Community Alignment & 20 & Human-preferred LLM response \parencite{zhang2026cultivating} \\
+PLURAL & 20 & Survey-derived preferred response \parencite{agarwal2026plural} \\
+PACT & 20 & Culture-following candidate; not treated as universal ground truth \parencite{borah2026pact} \\
+ThaiCLI & 20 & Human-reviewed chosen answer \parencite{kim2025thaicli} \\
+PRISM & 20 & Highest-rated opening-turn LLM response among the selected source conversations \parencite{kirk2024prism} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Final post-rerun state}
+
+After rerunning failed records, 116 of 120 items completed. The four unresolved IDs are 028, 034, 076 and 084. Three failures were provider transport timeouts; record 076 was a structured-output failure at target extraction.
+
+Of the 116 completed cases, 102 received a substantive numeric cultural assessment: 22 appropriate and 80 partially appropriate. Six were insufficient and eight were marked not culturally applicable under the earlier architecture. No substantively scored response was labelled culturally inappropriate. The mean normalized score over the 102 numeric cases was 87.24; mean evidence coverage over completed cases with a defined coverage value was 71.5\%.
+
+\section*{Interpretation}
+
+The corpus was intentionally positively selected from its source datasets. Agreement with that selection therefore provides a \emph{sanity check} rather than an accuracy estimate. The result shows that the earlier Vericult pipeline could complete heterogeneous multilingual cases and generally avoid rejecting source-endorsed responses, while still assigning mostly partial rather than perfect scores.
+
+The PRISM subset additionally demonstrates why these outputs must not be interpreted as calibrated human ratings. Across 17 records with both numeric values, Pearson correlation with the archived PRISM source score was $-0.203$ and Spearman correlation was $-0.193$. The archive therefore supports coarse consistency and technical feasibility, not fine-grained preference-score prediction.
+
+\section*{Archive identity}
+
+The exact archival branch is \texttt{archive/external-120-pre-freeze} at commit \texttt{3a7bd8088ca1f9cabc8b7945792430cc501c160d}. The archive deliberately does not modify the active semantic freeze of Vericult 1.1.
