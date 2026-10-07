@@ -6,40 +6,42 @@ The previous chapter operationalized cultural appropriateness as a multidimensio
 The final architecture separates three functions that are often conflated in automated evaluation: identifying what is culturally material in the response, acquiring evidence about externally checkable claims, and making the final rubric-based cultural judgment. The central control flow is:
 \[
 \begin{aligned}
-\text{prompt} &\rightarrow \text{context} \rightarrow \text{dimension plan} \rightarrow \text{response spans}\\
-&\rightarrow \text{material targets} \rightarrow \text{neutral questions} \rightarrow \text{candidate-blind evidence}\\
-&\rightarrow \text{frozen memo} \rightarrow \text{target verdicts} \rightarrow \text{dimension scoring / abstention}\\
-&\rightarrow \text{aggregate score and selective candidate label}.
+\text{prompt} &\rightarrow \text{context} \rightarrow \text{cultural-applicability gate}\\
+&\rightarrow \text{shared D01--D10 plan} \rightarrow \text{response-assessability gate}\\
+&\rightarrow \text{response spans} \rightarrow \text{material targets} \rightarrow \text{neutral questions}\\
+&\rightarrow \text{candidate-blind evidence} \rightarrow \text{frozen memo} \rightarrow \text{target verdicts}\\
+&\rightarrow \text{dimension scoring / recovery / selective fallback} \rightarrow \text{final outcome}.
 \end{aligned}
 \]
 
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-node distance=4mm,
+node distance=3.5mm,
 box/.style={draw, rounded corners, align=center, text width=11.7cm, minimum height=7mm, font=\small},
 arrow/.style={-{Latex[length=2mm]}, thick}
 ]
 \node[box] (a) {Prompt + candidate response};
-\node[box, below=of a] (b) {Prompt-supported context + shared D01--D10 applicability plan};
-\node[box, below=of b] (c) {Deterministic response spans $\rightarrow$ material targets $\rightarrow$ neutral questions};
-\node[box, below=of c] (d) {\textbf{Candidate-blind boundary}: query rewriting, retrieval, provenance filtering, source classification and evidence synthesis};
-\node[box, below=of d] (e) {Frozen evidence memo + bounded follow-up};
-\node[box, below=of e] (f) {Target--evidence comparison + D01--D10 scoring / abstention};
-\node[box, below=of f] (g) {Candidate label and optional selective Best-of-4 decision};
-\draw[arrow] (a)--(b); \draw[arrow] (b)--(c); \draw[arrow] (c)--(d);
-\draw[arrow] (d)--(e); \draw[arrow] (e)--(f); \draw[arrow] (f)--(g);
+\node[box, below=of a] (b) {Prompt-supported context + \textbf{cultural-applicability gate}};
+\node[box, below=of b] (c) {If applicable: shared D01--D10 plan + \textbf{response-assessability gate}};
+\node[box, below=of c] (d) {Deterministic response spans $\rightarrow$ material targets $\rightarrow$ neutral questions};
+\node[box, below=of d] (e) {\textbf{Candidate-blind boundary}: query rewriting, retrieval, provenance filtering, source classification and evidence synthesis};
+\node[box, below=of e] (f) {Frozen evidence memo + bounded follow-up};
+\node[box, below=of f] (g) {Target--evidence comparison + D01--D10 scoring / structural recovery / selective recommendation fallback};
+\node[box, below=of g] (h) {Final outcome: substantive label or explicit reject state; optional selective Best-of-4 decision};
+\draw[arrow] (a)--(b); \draw[arrow] (b)--(c); \draw[arrow] (c)--(d); \draw[arrow] (d)--(e);
+\draw[arrow] (e)--(f); \draw[arrow] (f)--(g); \draw[arrow] (g)--(h);
 \end{tikzpicture}
-\caption{Frozen Vericult 1.1 verification pipeline. Evidence acquisition occurs behind a structural candidate-blind boundary; exact candidate spans are reintroduced only after evidence has been frozen.}
+\caption{Frozen Vericult 1.1 verification pipeline. Non-cultural prompts and non-assessable responses exit before evidence acquisition; evidence acquisition for substantive cases occurs behind a structural candidate-blind boundary.}
 \label{fig:vericult-pipeline}
 \end{figure}
 
 
 \section{Design Objectives}
 
-Vericult is guided by eight objectives. First, it must remain independent of the comparison systems used in the experiments. Second, cultural interpretation must be context-sensitive rather than inferred from names or demographic stereotypes. Third, the architecture must distinguish retrievable facts and descriptive norms from contextual, internal or value-laden judgments. Fourth, evidence acquisition should be separated from candidate wording as far as possible. Fifth, search must be bounded, source-aware and reproducible. Sixth, unresolved evidence must remain visible through selective abstention rather than being converted into fabricated certainty. Seventh, technical failure must remain distinct from semantic uncertainty. Eighth, every completed judgment should be reconstructable from an execution trace.
+Vericult is guided by nine objectives. First, it must remain independent of the comparison systems used in the experiments. Second, cultural interpretation must be context-sensitive rather than inferred from names or demographic stereotypes. Third, culturally irrelevant tasks should be rejected before D01--D10 scoring. Fourth, culturally applicable prompts whose responses contain no substantive answer should be distinguished from evidential uncertainty. Fifth, the architecture must separate retrievable facts and descriptive norms from contextual, internal or value-laden judgments. Sixth, evidence acquisition should be separated from candidate wording as far as possible. Seventh, search must be bounded, source-aware and reproducible. Eighth, unresolved evidence must remain visible through abstention or a narrowly scoped contextual fallback rather than being converted into fabricated factual certainty. Ninth, every completed judgment should be reconstructable from an execution trace.
 
-The sixth objective is implemented at both dimension and candidate level. The dimension scorer can return 0, 1, 2 or \texttt{abstain}. When all relevant retrievable targets for a dimension remain insufficient and no directly assessable target provides a basis, Python forces that dimension to abstain. If no planned dimension is numerically scored, the candidate becomes \texttt{insufficient\_evidence}. A genuinely broken pipeline remains \texttt{status=failed}; technical failure and semantic abstention are therefore separate outcomes.
+The resulting outcome space distinguishes four concepts that earlier iterations risked conflating: \texttt{not\_culturally\_applicable}, \texttt{not\_assessable}, \texttt{insufficient\_evidence}, and technical \texttt{status=failed}. Only culturally applicable and assessable responses proceed to cultural scoring.
 
 \section{Semantic Backbone and Model Separation}
 
