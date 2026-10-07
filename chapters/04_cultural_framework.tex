@@ -118,27 +118,33 @@ The numeric anchors have a consistent interpretation:
 
 Abstention is deliberately narrower than uncertainty in general. Limited specificity, imperfect coverage or an assessable but incomplete response should receive score 1 rather than \texttt{abstain}. Conversely, when every retrievable target relevant to a dimension remains \texttt{insufficient} and no relevant non-retrieval target can be assessed directly, that dimension is forced to abstain. Missing evidence is therefore not treated as support, contradiction or cultural correctness.
 
-\section{Aggregation and Final Labels}
+\section{Aggregation and Final Outcomes}
 
-Let $J_s$ be the set of planned dimensions receiving numeric scores. When $|J_s|>0$, the normalized candidate score is
+Let $J_s$ be the set of planned dimensions receiving numeric scores. When $|J_s|>0$, the exact internal normalized aggregate is
 \[
-S(r)=\frac{\sum_{j\in J_s}s_j}{2|J_s|},
+S(r)=\frac{\sum_{j\in J_s}s_j}{2|J_s|}.
 \]
-and the human-readable \texttt{vericult\_score} is $100S(r)$. Abstained dimensions are excluded from the numeric denominator but remain visible through \texttt{scored\_count}, \texttt{applicable\_count} and \texttt{abstained\_dimensions}. If no dimension is scored, the aggregate is undefined rather than replaced with zero or a neutral midpoint.
+This exact aggregate is retained for deterministic comparison. The public human-readable \texttt{vericult\_score}=100S(r) is emitted only when every applicable dimension is numerically scored. If any applicable dimension abstains, the public score is \texttt{null} rather than presenting a deceptively complete number. If no dimension is scored, both aggregates are undefined.
 
-Candidate labels are derived deterministically:
+The final outcome hierarchy also contains two states that occur before dimension scoring:
 \begin{itemize}
-    \item \texttt{insufficient\_evidence} if no planned dimension receives a numeric score;
+    \item \texttt{not\_culturally\_applicable}: the prompt does not materially require cultural reasoning;
+    \item \texttt{not\_assessable}: the prompt is culturally applicable but the response supplies no substantive culturally assessable answer content.
+\end{itemize}
+
+For an applicable and assessable response, the score-derived labels are:
+\begin{itemize}
+    \item \texttt{insufficient\_evidence} if no planned dimension receives a defensible numeric score;
     \item \texttt{culturally\_inappropriate} if any scored dimension receives 0;
     \item \texttt{culturally\_appropriate} if every planned dimension is scored 2 and none abstains;
     \item \texttt{partially\_culturally\_appropriate} otherwise.
 \end{itemize}
 
-This absolute gate matters for Best-of-4. A candidate with one score-0 material cultural failure is not endorsed merely because strong scores on unrelated dimensions raise its average. Likewise, a candidate with no scored cultural basis is not ranked as if its missing evidence implied neutrality.
+This ordering prevents three category errors: a non-cultural task is not called evidence-insufficient, a refusal is not assigned a cultural-correctness score, and a material score-0 failure is not hidden by abstention on another dimension.
 
 \section{Evidence Sufficiency and Selective Abstention}
 
-Evidence sufficiency and cultural appropriateness answer different questions, but both are represented in the frozen output. Target-level evidence can be sufficient, conflicting or insufficient; dimensions can be scored or abstain; and a candidate with no scored dimensions receives the selective outcome \texttt{insufficient\_evidence}. This is not a fourth degree of cultural appropriateness. It is a statement that Vericult did not establish a defensible cultural label for that candidate.
+Evidence sufficiency, task applicability and response assessability answer different questions. Target-level evidence can be sufficient, conflicting or insufficient; dimensions can be scored or abstain; an applicable and assessable candidate with no scored dimensions becomes \texttt{insufficient\_evidence}; a non-cultural task becomes \texttt{not\_culturally\_applicable}; and a pure refusal/non-answer becomes \texttt{not\_assessable}.
 
-The trace therefore preserves cultural scores, abstentions, evidence coverage, memo sufficiency, source provenance and technical status separately. This prevents a category error in which retrieval failure is mistaken for evidence that the response is either culturally appropriate or inappropriate.
+These are reject or routing outcomes rather than additional degrees on the cultural-appropriateness scale. The trace therefore preserves applicability, assessability, cultural scores, abstentions, evidence coverage, memo sufficiency, source provenance and technical status separately. This keeps retrieval failure from being mistaken for cultural misalignment and prevents edge cases from being forced into a 0/1/2 judgment.
 
