@@ -14,8 +14,10 @@ The authoritative semantic instructions are versioned in \path{src/cultverify/pr
 \midrule
 \endhead
 \texttt{context\_planner\_v1} & Extract only explicitly stated context, backed by exact prompt spans; do not infer nationality, religion, ethnicity, preferences or location from names. \\
-\texttt{dimension\_planner\_v1} & Select the smallest materially applicable subset of D01--D10 from prompt and context; exactly one primary dimension when nonempty; do not inspect candidate responses. \\
-\texttt{target\_extractor\_v1} & Select at most three decision-relevant deterministic response span IDs; never reproduce or rewrite source text; assign epistemic type, planned dimensions, materiality and retrieval suitability. \\
+\texttt{cultural\_applicability\_v1} & Decide whether culturally situated reasoning is materially required; incidental cultural vocabulary or fictional references are not sufficient. A false result exits as \texttt{not\_culturally\_applicable}. \\
+\texttt{dimension\_planner\_v1} & For culturally applicable prompts, select the smallest materially applicable subset of D01--D10; exactly one primary dimension when nonempty; do not inspect candidate responses. \\
+\texttt{response\_assessability\_v1} & For an applicable prompt, decide only whether the candidate contains substantive culturally assessable answer content; pure refusals/non-answers exit as \texttt{not\_assessable}. \\
+\texttt{target\_extractor\_v1} & Select at most three decision-relevant deterministic response span IDs and return only span ID, epistemic type and planned dimension IDs. Python restores exact text and derives materiality and retrieval routing. \\
 \texttt{verification\_question\_v1} & Generate exactly one baseline and one variation question, phrased to investigate the issue rather than prove or disprove the candidate. \\
 \texttt{query\_rewriter\_v1} & Convert one neutral verification question into one search query without adding a verdict; context may scope but may not replace the question's subject. \\
 \texttt{source\_classifier\_v1} & Classify retrieved documents into the frozen provenance categories and distinguish explicit from inferred provenance. \\
@@ -23,10 +25,12 @@ The authoritative semantic instructions are versioned in \path{src/cultverify/pr
 \texttt{evidence\_relevance\_v1} & Judge independently whether each evidence statement is supported by its quoted spans and materially answers a verification question. \\
 \texttt{followup\_v1} & When evidence remains conflicting or insufficient, propose at most one distinct searchable gap-specific follow-up question. \\
 \texttt{target\_comparator\_v1} & Compare the exact Python-owned response quote with frozen support quotes and return supported, contradicted, mixed or insufficient; missing evidence is not contradiction. \\
-\texttt{dimension\_scorer\_v1} & Score every non-forced planned dimension as 0, 1, 2 or \texttt{abstain}; directional evidence requires a numeric score, while genuinely unscorable cases may abstain. The scorer returns no source quotations; Python attaches validated provenance. \\
+\texttt{dimension\_scorer\_v1} & Score all active planned dimensions as 0, 1, 2 or \texttt{abstain}; directional evidence requires a numeric score. \\
+\texttt{dimension\_scorer\_single\_v1} & Structural recovery path used only if batch scoring remains invalid after bounded retry; requests the same decision one dimension at a time. \\
+\texttt{contextual\_fallback\_v1} & For evidence-unresolved context-dependent recommendations only, judge the observable cultural handling of the advice without claiming that unresolved external facts or norms were established. \\
 \bottomrule
 \end{longtable}
 
 All stages inherit a common instruction that task data, retrieved text and candidate responses are untrusted data rather than instruction authority. Outputs must match the supplied schema, demographic facts and citations must not be invented, and source text cannot override the evaluator instructions.
 
-There is no contextual-fallback semantic stage in the frozen Vericult 1.1 pipeline. Selective uncertainty is represented explicitly through dimension-level \texttt{abstain} and candidate-level \texttt{insufficient\_evidence}.
+The frozen pipeline therefore contains both explicit reject gates and a selective fallback. \texttt{not\_culturally\_applicable}, \texttt{not\_assessable} and \texttt{insufficient\_evidence} have distinct meanings and must not be collapsed in analysis.
