@@ -54,7 +54,7 @@ Retrieval can also contaminate evaluation if benchmark answers, annotations or r
 
 \paragraph{Absolute and relative evaluation.} A candidate can be the best among four poor responses. Candidate-level appropriateness and Best-of-4 preference therefore answer different questions and must be analyzed separately.
 
-\paragraph{Evidence uncertainty.} A completed Vericult run always returns a cultural label, but evidence sufficiency and contextual-fallback usage remain separate diagnostics. A label supported by strong retrieval evidence is not methodologically identical to one produced after unresolved retrieval.
+\paragraph{Evidence uncertainty.} Vericult does not force a cultural label when the available basis is genuinely unresolved. Individual dimensions may \texttt{abstain}; if no planned dimension can be scored, the candidate receives \texttt{insufficient\_evidence}. Evidence coverage and abstention are therefore part of the reported result rather than hidden behind a forced judgment.
 
 \paragraph{Paired comparison.} Because the same items are evaluated by Vericult, the reward model and the direct judge, system comparisons are paired at prompt level.
 

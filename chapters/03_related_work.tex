@@ -44,7 +44,7 @@ CARB also evaluates different reward-model families and reports that generative 
 
 However, CARB and Vericult solve different problems. CARB is fundamentally a reward-model evaluation and improvement study. It asks which candidate should be preferred in a Best-of-N setting. Vericult is designed to evaluate one arbitrary answer and expose a trace of why the answer is judged culturally appropriate or inappropriate. Best-of-4 is therefore retained as a comparison mode, not as the primary application.
 
-A second difference is evidence. Think-as-Locals relies on the reward model's internal cultural knowledge and reasoning. Vericult additionally attempts to ground externally checkable claims in retrieved evidence and records whether that evidence was sufficient, conflicting or unavailable. When retrieval cannot resolve a question, the final architecture does not pretend that the web established a cultural truth; it invokes an explicit contextual fallback and marks that path in the trace.
+A second difference is evidence. Think-as-Locals relies on the reward model's internal cultural knowledge and reasoning. Vericult additionally attempts to ground externally checkable claims in retrieved evidence and records whether that evidence was sufficient, conflicting or unavailable. When the available basis remains genuinely unresolved, the frozen architecture permits abstention instead of forcing the web evidence into a directional cultural conclusion.
 
 For the final empirical study, CARB therefore has two roles. First, it motivates the reward-model comparison and Best-of-N setting. Second, where official instance-level CARB data are available, a deterministic subset is used for external validation after Vericult is frozen. Published CARB results are contextual comparison, not training labels or inputs to Vericult.
 
@@ -68,7 +68,7 @@ FrameNet-Cultures evaluates open-ended generation through cross-cultural frame s
 
 ExCAM is even closer to Vericult's intended interface. It introduces an explainable cultural-awareness metric for arbitrary instruction--output pairs and constructs ExCAM40k from multiple cultural benchmarks with controlled cultural errors \parencite{leiter2026excam}. ExCAM identifies, rates and explains cultural errors rather than merely asking for a relative preference.
 
-The architectural distinction is important. ExCAM is a learned metric; Vericult is an explicit multi-stage verification framework. Vericult's contribution is therefore not the discovery that free-text cultural errors can be classified. It is the investigation of whether dimension planning, deterministic target grounding, evidence retrieval, evidence freezing and a traceable contextual fallback provide useful additional structure.
+The architectural distinction is important. ExCAM is a learned metric; Vericult is an explicit multi-stage verification framework. Vericult's contribution is therefore not the discovery that free-text cultural errors can be classified. It is the investigation of whether dimension planning, deterministic target grounding, evidence retrieval, evidence freezing, selective abstention and full traces provide useful additional structure.
 
 \section{Research Gap}
 
@@ -79,11 +79,13 @@ The gap addressed here is deliberately narrower: an independent post-hoc verifie
     \item an explicit multidimensional cultural rubric;
     \item context extraction without unsupported demographic inference;
     \item bounded selection of materially relevant response spans;
+    \item deterministic ownership of exact source quotations by Python rather than the language model;
     \item retrieval only when the target is externally checkable;
-    \item candidate-blind evidence synthesis after verification questions have been formed;
+    \item candidate-blind evidence synthesis after neutral verification questions have been formed;
     \item immutable evidence snapshots and traceable target--evidence links;
-    \item a separate contextual fallback when retrieval does not justify a directional conclusion; and
-    \item both absolute single-response assessment and optional Best-of-4 ranking.
+    \item explicit abstention when the available basis cannot support a defensible dimension score; and
+    \item both absolute single-response assessment and optional Best-of-4 ranking with an absolute acceptability gate.
 \end{enumerate}
 
 This is not a claim that each component is individually novel. The contribution is the combination and empirical evaluation of these properties as one standalone verifier.
+

@@ -36,7 +36,13 @@
 \maketitle
 
 \chapter*{Abstract}
-\TODO{Write the abstract after the final backbone selection, v2 evaluation, external validation, and comparative analysis are complete.}
+Large language models are increasingly deployed across culturally diverse contexts, yet evaluating whether a generated response is culturally appropriate remains difficult. Cultural appropriateness is context-dependent, multidimensional and often involves social norms, pragmatic expectations, values, religious practices, institutional rules, identity and regional variation that cannot be reduced to factual correctness alone. Existing cultural benchmarks primarily evaluate cultural knowledge, value alignment, classification performance or relative response preferences, while reward models and direct LLM judges provide limited transparency into the evidential basis of their judgments.
+
+This thesis introduces \textbf{Vericult}, a standalone evidence-grounded framework for verifying arbitrary prompt--response pairs. A literature-grounded operational framework defines ten cultural dimensions, D01--D10, spanning everyday practices, language and pragmatics, social etiquette, values, institutions, religion, family and gender, work and civic life, heritage, and identity and intergroup relations. Vericult extracts only prompt-supported context, plans applicable dimensions, deterministically grounds material response spans, generates neutral verification questions, acquires candidate-blind web evidence where retrieval is appropriate, freezes the resulting evidence, and then evaluates the candidate against the frozen evidence and rubric. Dimension judgments use scores 0, 1, 2 or \texttt{abstain}; unresolved candidates are exposed as \texttt{insufficient\_evidence} rather than converted into artificial certainty.
+
+The framework is evaluated on a frozen 30-prompt, 120-response controlled benchmark with five-annotator human reference judgments, against an independent Skywork reward model and a direct no-retrieval LLM judge, and through a preregistered external-validation protocol using independently published cultural resources. \TODO{Insert the final quantitative result sentence after Chapters 7--8 are populated.}
+
+The resulting methodology reframes cultural evaluation from an opaque preference signal into an inspectable verification process that separates context interpretation, evidence acquisition, cultural judgment, selective abstention and technical failure.
 
 \tableofcontents
 \clearpage
