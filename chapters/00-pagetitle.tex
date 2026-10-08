@@ -1,75 +1,58 @@
 \begin{titlepage}
 \thispagestyle{empty}
-
-% Official LUH title-page artwork exported from the Word template.
-% The PDF is used as a full-page background; all variable text is typeset in LaTeX.
 \begin{tikzpicture}[remember picture,overlay]
-
-  % Background
+  % Original LUH artwork (logo and architectural illustration).
   \node[anchor=south west,inner sep=0pt] at (current page.south west) {%
     \includegraphics[width=\paperwidth,height=\paperheight]{pagetitle_bckground.pdf}%
   };
 
-  % University / faculty / institute
-  \node[
-    anchor=north west,
-    align=left,
-    text width=12.2cm,
-    font=\normalsize
-  ] at ([xshift=4.10cm,yshift=-5.15cm]current page.north west) {%
-    \textbf{Gottfried Wilhelm Leibniz Universität Hannover}\\
-    Fakultät für Elektrotechnik und Informatik\\
-    Institut für \textit{[Institut eintragen]}
+  % Institutional affiliation.
+  \node[anchor=north west,align=left,text width=15.0cm,
+        font=\normalsize] at
+        ([xshift=3.15cm,yshift=-4.55cm]current page.north west) {%
+    \textbf{Gottfried Wilhelm Leibniz Universität Hannover}\\[3pt]
+    Fakultät für Elektrotechnik und Informatik\\[3pt]
+    Institut für Data Science\\
+    Fachgebiet Wissensbasierte Systeme
   };
 
-  % Thesis title
-  \node[
-    anchor=north west,
-    align=left,
-    text width=12.2cm,
-    font=\Large\bfseries
-  ] at ([xshift=4.10cm,yshift=-8.35cm]current page.north west) {%
-Evidence-Grounded Verification of Cultural Appropriateness in Large Language Model Outputs
+  % Main title: deliberately wide, ragged-right and with manual line breaks
+  % to prevent unsightly word hyphenation.
+  \node[anchor=north west,align=left,text width=15.2cm,
+        font=\Large\bfseries] at
+        ([xshift=3.15cm,yshift=-7.65cm]current page.north west) {%
+    Evidence-Grounded Verification of\\[4pt]
+    Cultural Appropriateness in\\[4pt]
+    Large Language Model Outputs
   };
 
-  % Thesis type / programme / author
-  \node[
-    anchor=north west,
-    align=left,
-    text width=12.2cm
-  ] at ([xshift=4.10cm,yshift=-10.55cm]current page.north west) {%
-    {\Large\bfseries Bachelorarbeit}\\[0.15cm]
-    im Studiengang Informatik\\
-    von Rayan Chebbi
+  % Thesis type, study programme and author.
+  \node[anchor=north west,align=left,text width=14.8cm] at
+        ([xshift=3.15cm,yshift=-10.55cm]current page.north west) {%
+    {\Large\bfseries Bachelorarbeit}\\[9pt]
+    im Studiengang Informatik\\[4pt]
+    von \textbf{Rayan Chebbi}
   };
 
-  % Examiners and matriculation number
-  \node[
-    anchor=north west,
-    align=left,
-    text width=12.2cm
-  ] at ([xshift=4.10cm,yshift=-14.10cm]current page.north west) {%
-    \begin{tabular}{@{}p{3.7cm}l@{}}
-      First evaluator:  & \textit{Prof. Dr. techn. Dipl-Ing. Wolfgang Nejdl} \\
-      Second evaluator: & \textit{Mandeep Rathee} \\
-      Supervisor:  & \textit{Mandeep Rathee} \\
-      Matriculation Number:   & \textit{10035233}
+  % Fixed-width labels ensure that nothing wraps unexpectedly.
+  \node[anchor=north west,align=left,text width=15.0cm] at
+        ([xshift=3.15cm,yshift=-13.50cm]current page.north west) {%
+    \begin{tabular}{@{}p{4.2cm}p{10.4cm}@{}}
+      First evaluator: & Prof. Dr. techn. Dipl.-Ing. Wolfgang Nejdl\\[4pt]
+      Second evaluator: & Mandeep Rathee\\[4pt]
+      Supervisor: & Mandeep Rathee\\[4pt]
+      Matriculation number: & 10035233
     \end{tabular}
   };
 
-  % Dates
-  \node[
-    anchor=north west,
-    align=left,
-    text width=12.2cm
-  ] at ([xshift=4.10cm,yshift=-17.20cm]current page.north west) {%
-    \begin{tabular}{@{}p{3.7cm}l@{}}
-      Ausgabedatum: & \textit{10.06.2026} \\
-      Abgabedatum:  & \textit{12.10.2026}
+  % Dates kept clear of the architectural illustration.
+  \node[anchor=north west,align=left,text width=15.0cm] at
+        ([xshift=3.15cm,yshift=-16.25cm]current page.north west) {%
+    \begin{tabular}{@{}p{4.2cm}l@{}}
+      Ausgabedatum: & 10.06.2026\\[4pt]
+      Abgabedatum: & 12.10.2026
     \end{tabular}
   };
-
 \end{tikzpicture}
-
 \null
 \end{titlepage}
