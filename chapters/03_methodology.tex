@@ -356,13 +356,13 @@ Candidate-level ratings and relative winner votes are analyzed separately. A for
 The inference runners are structurally isolated from Human Gold. Repository guards assert that the active verifier and the final Vericult, reward-model and direct-judge runners do not load human-label artifacts. Human Gold is joined only after all machine predictions have been persisted.
 
 \subsection{Baselines}
-\subsection{Skywork Reward Model}
+\subsubsection{Skywork Reward Model}
 
 The independent reward-model baseline is \texttt{Skywork/Skywork-Reward-V2-Qwen3-4B}, revision \texttt{fd958fe} \parencite{liu2026skyworkrewardv2}. It receives each prompt--response pair independently and produces scalar rewards. Four rewards induce a Best-of-4 preference. An exact maximum-score tie becomes \texttt{no\_clear\_winner}. Reward magnitudes are not interpreted as calibrated probabilities of cultural correctness.
 
 The reward model is not part of Vericult. Its scores never enter Vericult retrieval, scoring, gating or ranking.
 
-\subsection{Direct LLM Judge}
+\subsubsection{Direct LLM Judge}
 
 The direct judge uses \texttt{qwen3:4b} at temperature 0 with the same high-level D01--D10 rubric but without retrieval or the staged verifier architecture. It receives the prompt and four candidates in a deterministic permutation using seed \texttt{20260930}. Its frozen decision space contains A/B/C/D plus \texttt{no\_clear\_winner}, \texttt{no\_acceptable\_candidate}, \texttt{insufficient\_evidence}, \texttt{not\_culturally\_applicable} and \texttt{not\_assessable}, which are mapped back to canonical candidate labels where applicable.
 
