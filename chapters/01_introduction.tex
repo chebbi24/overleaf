@@ -1,8 +1,7 @@
 \chapter{Introduction}
 \label{ch:introduction}
 
-\section{Motivation}
-
+\section{Background and Motivation}
 Large language models (LLMs) are increasingly used as general-purpose interfaces for information seeking, advice, writing assistance, education and workplace communication. In these settings, response quality depends on more than grammatical fluency or factual correctness. Many user requests are situated in cultural contexts involving local practices, forms of address, social expectations, institutional constraints, religious sensitivities, value conflicts, historical references or identity-related concerns. A response can therefore be fluent and factually plausible while still being poorly adapted to the situation in which it is used.
 
 Culture is not a single stable variable that can be reduced to nationality. Institutional and scholarly accounts describe culture through overlapping features such as ways of life, values, traditions, beliefs, identities, language and social participation, while surveys of cultural NLP operationalize different subsets of these facets depending on the task \parencite{unesco2001culturaldiversity,cescr2009gc21,adilazuarda2024culture,liu2025culturallyaware,pawar2025culturalawareness}. Cultural appropriateness is consequently contextual and often plural. A common tendency is not a binding rule, a legal requirement is not an informal custom, and a majority preference is not moral unanimity.
@@ -16,8 +15,7 @@ The system developed in this thesis is \textbf{Vericult}, a standalone post-hoc 
 \text{user prompt} \rightarrow \text{chosen LLM} \rightarrow \text{one answer} \rightarrow \text{Vericult} \rightarrow \text{cultural assessment}.
 \]
 
-\section{Problem Statement}
-
+\section{Research Problem and Objectives}
 Given a prompt $p$ and generated response $r$, Vericult should first determine whether the task actually requires a cultural appropriateness judgment. If cultural reasoning is only incidental, the system returns \texttt{not\_culturally\_applicable} rather than manufacturing D01--D10 scores. For culturally applicable prompts it plans the relevant dimensions, then checks whether the response contains substantive culturally assessable answer content. A pure refusal or non-answer returns \texttt{not\_assessable}. Only then does the verifier identify materially important response content, retrieve evidence where appropriate and produce a cultural assessment.
 
 For an applicable and assessable response, the substantive cultural labels are \texttt{culturally\_appropriate}, \texttt{partially\_culturally\_appropriate} and \texttt{culturally\_inappropriate}. The selective outcome \texttt{insufficient\_evidence} is reserved for an applicable, assessable response for which no defensible scored cultural basis can be established. Technical execution failure is represented separately through run status and is never silently converted into a semantic outcome.
@@ -32,14 +30,7 @@ Fourth, retrieval can introduce its own bias and contamination. If candidate wor
 
 Finally, missing evidence, non-applicability, non-assessability and technical failure are different states. The final architecture keeps them separate rather than treating every unresolved case as \texttt{insufficient\_evidence}.
 
-\section{Research Gap}
-
-Existing work covers important parts of this problem but does not directly provide the architecture investigated here. CulturalBench, BLEnD, NormAd, SafeWorld and FrameNet-Cultures are primarily evaluation datasets or protocols for measuring model behavior \parencite{chiu2025culturalbench,myung2024blend,rao2025normad,yin2024safeworld,jamshidi2026framenet}. CARB focuses on reward-model cultural awareness and preference ranking \parencite{zhang2026carb}. CultureLLM and ValuesRAG improve generation through cultural adaptation or retrieved context rather than independently verifying a completed response \parencite{li2024culturellm,seo2025valuesrag}. ExCAM comes closest to the present objective by identifying, rating and explaining cultural errors in instruction--output pairs, but it is a trained metric rather than an evidence-retrieval architecture \parencite{leiter2026excam}.
-
-The practical gap addressed here is therefore a standalone verifier that combines an explicit multidimensional cultural rubric with bounded retrieval, source-aware evidence synthesis, deterministic grounding to exact response spans, a candidate-blind evidence boundary, explicit abstention under unresolved evidence and reproducible traces. The thesis does not assume that this architecture is superior. It implements it as a testable system and evaluates where it agrees with human judgments and established comparison systems, where it fails, and which design choices are useful for future cultural-verification systems.
-
 \section{Research Questions}
-
 \begin{description}
     \item[\textbf{RQ1}] How reliably can Vericult assess arbitrary prompt--response pairs using the D01--D10 framework while distinguishing non-applicability, non-assessability and evidence insufficiency?
     \item[\textbf{RQ2}] In a controlled Best-of-4 setting, to what extent does Vericult identify the response preferred by human annotators, and how does this compare with an independent reward model and a direct LLM judge?
@@ -50,7 +41,6 @@ The practical gap addressed here is therefore a standalone verifier that combine
 RQ1 reflects the intended single-response deployment scenario and explicitly treats the reject options as part of correct verifier behavior rather than as missing predictions. RQ2 uses Best-of-4 as a controlled preference-evaluation instrument and bridge to reward-model research. RQ3 tests transfer after the semantic freeze. RQ4 treats failures and selective outcomes as empirical evidence about the architecture rather than as cases to be tuned away after freeze.
 
 \section{Contributions}
-
 \begin{itemize}
     \item \textbf{A literature-grounded D01--D10 operational framework} spanning everyday practices, pragmatics, etiquette, values, institutions, religion, family and gender, work and civic life, heritage, and identity/intergroup relations.
     \item \textbf{A standalone evidence-grounded verifier architecture} that separates prompt context, cultural applicability, response assessability, cultural-dimension planning, deterministic response-span grounding, bounded evidence acquisition, frozen evidence comparison and final cultural scoring.
@@ -62,5 +52,4 @@ RQ1 reflects the intended single-response deployment scenario and explicitly tre
 \end{itemize}
 
 \section{Thesis Structure}
-
-\Cref{ch:background} introduces alignment, reward models, LLM-as-a-judge evaluation, cultural appropriateness and evidence-grounded verification. \Cref{ch:related} reviews cultural benchmarks and methods, with particular attention to CARB and recent free-text evaluators. \Cref{ch:framework} derives the D01--D10 operational framework. \Cref{ch:verifier} specifies Vericult's architecture and implementation. \Cref{ch:experiment} defines the final staged evaluation and freeze protocol. \Cref{ch:results} and \cref{ch:discussion} are intentionally reserved for the final frozen experiments. \Cref{ch:limitations} records the threats to validity that are already identifiable before results are known, and \cref{ch:conclusion} is finalized only after the empirical evidence is complete.
+This thesis is organized into six chapters. Chapter~2 reviews the literature on cultural appropriateness in large language models, cultural evaluation and adaptation, model-based evaluation, and evidence-grounded verification, and concludes by identifying the research gap addressed in this work. Chapter~3 presents the research design, the operational framework for cultural appropriateness, the Vericult methodology and implementation, and the experimental design. Chapter~4 reports the evaluation results, including comparisons with reward-model and LLM-judge baselines, agreement with human judgments, and external challenge evaluation. Chapter~5 discusses the findings, analyzes errors and implications, and examines limitations and threats to validity. Finally, Chapter~6 summarizes the work and outlines directions for future research.
