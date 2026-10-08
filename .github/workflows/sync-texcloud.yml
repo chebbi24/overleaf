@@ -1,0 +1,54 @@
+name: Sync to LUH TeX Cloud
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: texcloud-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v4
+
+      - name: Clone LUH TeX Cloud project
+        env:
+          TEXCLOUD_TOKEN: ${{ secrets.TEXCLOUD_TOKEN }}
+        run: |
+          set -euo pipefail
+          git clone "https://git:${TEXCLOUD_TOKEN}@tex.cloud.uni-hannover.de/git/6ac37c0a7bfff71ec498a680" /tmp/texcloud
+
+      - name: Sync thesis sources
+        run: |
+          set -euo pipefail
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='main.pdf' \
+            ./ /tmp/texcloud/
+
+      - name: Commit and push to LUH TeX Cloud
+        working-directory: /tmp/texcloud
+        run: |
+          set -euo pipefail
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+            exit 0
+          fi
+
+          git commit -m "Sync from GitHub main"
+          git push origin HEAD
