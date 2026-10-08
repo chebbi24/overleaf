@@ -2,33 +2,10 @@
 \label{ch:introduction}
 
 \section{Background and Motivation}
-Large language models (LLMs) are increasingly used as general-purpose interfaces for information seeking, advice, writing assistance, education and workplace communication. In these settings, response quality depends on more than grammatical fluency or factual correctness. Many user requests are situated in cultural contexts involving local practices, forms of address, social expectations, institutional constraints, religious sensitivities, value conflicts, historical references or identity-related concerns. A response can therefore be fluent and factually plausible while still being poorly adapted to the situation in which it is used.
-
-Culture is not a single stable variable that can be reduced to nationality. Institutional and scholarly accounts describe culture through overlapping features such as ways of life, values, traditions, beliefs, identities, language and social participation, while surveys of cultural NLP operationalize different subsets of these facets depending on the task \parencite{unesco2001culturaldiversity,cescr2009gc21,adilazuarda2024culture,liu2025culturallyaware,pawar2025culturalawareness}. Cultural appropriateness is consequently contextual and often plural. A common tendency is not a binding rule, a legal requirement is not an informal custom, and a majority preference is not moral unanimity.
-
-Recent benchmarks expose these difficulties from complementary angles. BLEnD and CulturalBench measure broad cultural knowledge; NormAd measures adaptation to increasingly explicit social norms; SafeWorld combines geo-diverse cultural and legal constraints; CARB studies whether reward models can rank culturally preferable responses; FrameNet-Cultures evaluates open-ended model behavior through cross-cultural frame semantics; and ExCAM directly targets cultural-error detection in arbitrary instruction--output pairs \parencite{myung2024blend,chiu2025culturalbench,rao2025normad,yin2024safeworld,zhang2026carb,jamshidi2026framenet,leiter2026excam}. Together, these studies show that cultural alignment is both a generation problem and an evaluation problem.
-
-This thesis focuses on the evaluation side. Once an LLM has produced an answer, a user, developer or auditor may need to know whether that particular answer is culturally appropriate for the stated context and why. A scalar reward-model preference score offers limited diagnostics. A direct LLM judge can explain its choice, but judge models are sensitive to prompt design, ordering and evaluator-specific biases \parencite{zheng2023llmjudge,wang2024notfairevaluators}. A useful verification layer should therefore expose the culturally relevant dimensions, separate externally checkable claims from contextual or normative judgments, retrieve evidence where retrieval is appropriate, and leave a reproducible trace of the decision process.
-
-The system developed in this thesis is \textbf{Vericult}, a standalone post-hoc verifier for culturally situated LLM outputs. Its primary interface evaluates a single prompt--response pair. Best-of-4 ranking is retained as an evaluation mode because it permits comparison with preference-oriented reward models and CARB-style protocols; it is not the end-user product requirement. The intended demonstration workflow is:
-\[
-\text{user prompt} \rightarrow \text{chosen LLM} \rightarrow \text{one answer} \rightarrow \text{Vericult} \rightarrow \text{cultural assessment}.
-\]
+undefined
 
 \section{Research Problem and Objectives}
-Given a prompt $p$ and generated response $r$, Vericult should first determine whether the task actually requires a cultural appropriateness judgment. If cultural reasoning is only incidental, the system returns \texttt{not\_culturally\_applicable} rather than manufacturing D01--D10 scores. For culturally applicable prompts it plans the relevant dimensions, then checks whether the response contains substantive culturally assessable answer content. A pure refusal or non-answer returns \texttt{not\_assessable}. Only then does the verifier identify materially important response content, retrieve evidence where appropriate and produce a cultural assessment.
-
-For an applicable and assessable response, the substantive cultural labels are \texttt{culturally\_appropriate}, \texttt{partially\_culturally\_appropriate} and \texttt{culturally\_inappropriate}. The selective outcome \texttt{insufficient\_evidence} is reserved for an applicable, assessable response for which no defensible scored cultural basis can be established. Technical execution failure is represented separately through run status and is never silently converted into a semantic outcome.
-
-This problem differs from ordinary factual verification in several ways. First, cultural interpretation depends on explicit context. A statement about etiquette, language, religion or institutions may be appropriate only for a particular relationship, setting, location or time. Inferring unstated demographic or geographic facts can itself introduce bias, so the verifier distinguishes supported context from assumptions.
-
-Second, not every prompt containing cultural vocabulary is genuinely a cultural-verification task, and not every response supplies assessable answer content. Separating applicability and assessability prevents these edge cases from being mislabeled as evidence failure.
-
-Third, not every culturally relevant issue is externally verifiable. Some response properties concern internal compliance with the user's request, interpersonal pragmatics or plural values. Retrieval can describe evidence about such issues, but it cannot turn every contextual judgment into an objective fact. The architecture therefore distinguishes retrievable targets from response-internal or non-verifiable targets and permits abstention where the available basis remains genuinely insufficient.
-
-Fourth, retrieval can introduce its own bias and contamination. If candidate wording remains visible while evidence is gathered, search may become oriented toward proving or disproving that candidate. Benchmark repositories or leaked annotations may also enter the evidence set. Vericult therefore uses a structural candidate-blind evidence stage, bounded retrieval, provenance classification, explicit exclusions and immutable evidence snapshots.
-
-Finally, missing evidence, non-applicability, non-assessability and technical failure are different states. The final architecture keeps them separate rather than treating every unresolved case as \texttt{insufficient\_evidence}.
+undefined
 
 \section{Research Questions}
 \begin{description}
