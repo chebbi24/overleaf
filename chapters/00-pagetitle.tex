@@ -1,43 +1,47 @@
 \begin{titlepage}
 \thispagestyle{empty}
 \begin{tikzpicture}[remember picture,overlay]
-  % Original LUH artwork (logo and architectural illustration).
+
+  % Official LUH artwork: logo and architectural illustration.
   \node[anchor=south west,inner sep=0pt] at (current page.south west) {%
     \includegraphics[width=\paperwidth,height=\paperheight]{pagetitle_bckground.pdf}%
   };
 
-  % Institutional affiliation.
-  \node[anchor=north west,align=left,text width=15.0cm,
-        font=\normalsize] at
-        ([xshift=3.15cm,yshift=-4.55cm]current page.north west) {%
-    \textbf{Gottfried Wilhelm Leibniz Universität Hannover}\\[3pt]
-    Fakultät für Elektrotechnik und Informatik\\[3pt]
-    Institut für Data Science\\
-    Fachgebiet Wissensbasierte Systeme
+  % University information at the upper left, aligned visually with the logo.
+  \node[
+    anchor=north west,
+    align=left,
+    text width=9.2cm,
+    font=\normalsize
+  ] at ([xshift=2.75cm,yshift=-1.75cm]current page.north west) {%
+    \textbf{Leibniz University Hannover}\\[3pt]
+    Faculty of Electrical Engineering and Computer Science\\[3pt]
+    Institute of Data Science\\
+    Knowledge-Based Systems Group
   };
 
-  % Main title: deliberately wide, ragged-right and with manual line breaks
-  % to prevent unsightly word hyphenation.
-  \node[anchor=north west,align=left,text width=15.2cm,
-        font=\Large\bfseries] at
-        ([xshift=3.15cm,yshift=-7.65cm]current page.north west) {%
-    Evidence-Grounded Verification of\\[4pt]
-    Cultural Appropriateness in\\[4pt]
-    Large Language Model Outputs
+  % Main title block centered on the page.
+  \node[
+    anchor=center,
+    align=center,
+    text width=15.5cm
+  ] at ([yshift=1.3cm]current page.center) {%
+    {\LARGE\bfseries
+    Evidence-Grounded Verification of\\[6pt]
+    Cultural Appropriateness in\\[6pt]
+    Large Language Model Outputs}\\[1.15cm]
+    {\Large\bfseries Bachelor's Thesis}\\[0.35cm]
+    {\large in Computer Science}\\[0.55cm]
+    {\large by \textbf{Rayan Chebbi}}
   };
 
-  % Thesis type, study programme and author.
-  \node[anchor=north west,align=left,text width=14.8cm] at
-        ([xshift=3.15cm,yshift=-10.55cm]current page.north west) {%
-    {\Large\bfseries Bachelorarbeit}\\[9pt]
-    im Studiengang Informatik\\[4pt]
-    von \textbf{Rayan Chebbi}
-  };
-
-  % Fixed-width labels ensure that nothing wraps unexpectedly.
-  \node[anchor=north west,align=left,text width=15.0cm] at
-        ([xshift=3.15cm,yshift=-13.50cm]current page.north west) {%
-    \begin{tabular}{@{}p{4.2cm}p{10.4cm}@{}}
+  % Examination information at the bottom, above the architectural artwork.
+  \node[
+    anchor=south west,
+    align=left,
+    text width=15.5cm
+  ] at ([xshift=2.75cm,yshift=6.05cm]current page.south west) {%
+    \begin{tabular}{@{}p{4.6cm}p{10.0cm}@{}}
       First evaluator: & Prof. Dr. techn. Dipl.-Ing. Wolfgang Nejdl\\[4pt]
       Second evaluator: & Mandeep Rathee\\[4pt]
       Supervisor: & Mandeep Rathee\\[4pt]
@@ -45,14 +49,19 @@
     \end{tabular}
   };
 
-  % Dates kept clear of the architectural illustration.
-  \node[anchor=north west,align=left,text width=15.0cm] at
-        ([xshift=3.15cm,yshift=-16.25cm]current page.north west) {%
-    \begin{tabular}{@{}p{4.2cm}l@{}}
-      Ausgabedatum: & 10.06.2026\\[4pt]
-      Abgabedatum: & 12.10.2026
+  % Dates at the bottom.
+  \node[
+    anchor=south west,
+    align=left,
+    text width=15.5cm
+  ] at ([xshift=2.75cm,yshift=4.35cm]current page.south west) {%
+    \begin{tabular}{@{}p{4.6cm}l@{}}
+      Issue date: & 10 June 2026\\[4pt]
+      Submission date: & 12 October 2026
     \end{tabular}
   };
+
 \end{tikzpicture}
+
 \null
 \end{titlepage}
