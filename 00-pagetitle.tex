@@ -1,0 +1,74 @@
+\begin{titlepage}
+\thispagestyle{empty}
+
+% Official LUH title-page artwork exported from the Word template.
+% The PDF is used as a full-page background; all variable text is typeset in LaTeX.
+\begin{tikzpicture}[remember picture,overlay]
+
+  % Background
+  \node[anchor=south west,inner sep=0pt] at (current page.south west) {%
+    \includegraphics[width=\paperwidth,height=\paperheight]{pagetitle_bckground.pdf}%
+  };
+
+  % University / faculty / institute
+  \node[
+    anchor=north west,
+    align=left,
+    text width=12.2cm,
+    font=\normalsize
+  ] at ([xshift=4.10cm,yshift=-5.15cm]current page.north west) {%
+    \textbf{Gottfried Wilhelm Leibniz Universität Hannover}\\
+    Fakultät für Elektrotechnik und Informatik\\
+    Institut für \textit{[Institut eintragen]}
+  };
+
+  % Thesis title
+  \node[
+    anchor=north west,
+    align=left,
+    text width=12.2cm,
+    font=\Large\bfseries
+  ] at ([xshift=4.10cm,yshift=-8.35cm]current page.north west) {%
+    Vericult: Evidence-Grounded Verification of Cultural Appropriateness in Large Language Model Outputs
+  };
+
+  % Thesis type / programme / author
+  \node[
+    anchor=north west,
+    align=left,
+    text width=12.2cm
+  ] at ([xshift=4.10cm,yshift=-10.55cm]current page.north west) {%
+    {\Large\bfseries Bachelorarbeit}\\[0.15cm]
+    im Studiengang Informatik\\
+    von Rayan Chebbi
+  };
+
+  % Examiners and matriculation number
+  \node[
+    anchor=north west,
+    align=left,
+    text width=12.2cm
+  ] at ([xshift=4.10cm,yshift=-14.10cm]current page.north west) {%
+    \begin{tabular}{@{}p{3.7cm}l@{}}
+      Erstprüfende/r:  & \textit{[Name eintragen]} \\
+      Zweitprüfende/r: & \textit{[Name eintragen]} \\
+      Matrikelnummer:   & \textit{[Matrikelnummer eintragen]}
+    \end{tabular}
+  };
+
+  % Dates
+  \node[
+    anchor=north west,
+    align=left,
+    text width=12.2cm
+  ] at ([xshift=4.10cm,yshift=-17.20cm]current page.north west) {%
+    \begin{tabular}{@{}p{3.7cm}l@{}}
+      Ausgabedatum: & \textit{[Datum eintragen]} \\
+      Abgabedatum:  & \textit{[Datum eintragen]}
+    \end{tabular}
+  };
+
+\end{tikzpicture}
+
+\null
+\end{titlepage}
