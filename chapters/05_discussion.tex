@@ -1,0 +1,75 @@
+\chapter{Discussion}
+\label{ch:discussion}
+
+\section{Interpretation of Main Findings}
+
+
+\section{Error Analysis}
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Implications for Cultural LLM Evaluation}
+
+
+
+
+
+
+
+
+\section{Limitations}
+Cultural appropriateness is not directly observable as a single objective variable. The D01--D10 framework is a designed operationalization grounded in recurring constructs from the literature, not a universally validated ontology of culture. Its dimensions overlap and necessarily encode normative choices. A high Vericult score therefore means that a response is judged well aligned under this explicit rubric, not that every member of a referenced culture would endorse it.
+
+The three substantive cultural labels compress substantial variation. \texttt{partially\_culturally\_appropriate} can represent mild omission, mixed evidence, imperfect contextualization or more substantial but non-zero limitations. The public 0--100 score is derived from equal-weight ordinal dimension scores only when all applicable dimensions are scored and must not be interpreted as a calibrated probability of cultural correctness. \texttt{not\_culturally\_applicable}, \texttt{not\_assessable} and \texttt{insufficient\_evidence} are reject/routing outcomes rather than additional levels of cultural appropriateness.
+
+The controlled PLT benchmark contains only 30 prompts and 120 candidate responses. It intentionally overrepresents culturally problematic responses and cannot represent the full space of languages, regions, religions, institutions, value systems or interaction types relevant to cultural appropriateness. Its generator provenance also does not represent the distribution of all contemporary production LLMs.
+
+The preregistered external protocol mitigates this by evaluating the already frozen verifier on independently published material from SafeWorld, CultureLLM/WVS and ScopeBench, with CARB added only if official item-level data are accessible. Even this does not establish global cultural coverage. Public benchmarks often rely on country labels, written web-accessible knowledge and survey abstractions and may underrepresent local, oral, minority or rapidly changing practices.
+
+The human reference contains five annotators and shows low winner agreement ($\kappa=0.090494$). Low agreement can reflect genuinely close or culturally ambiguous alternatives as well as annotator noise. A small non-expert panel cannot establish cultural ground truth. The thesis therefore reports agreement with a human reference rather than accuracy against an objective notion of culture.
+
+The realized protocol forced A/B/C/D winner selection. A response can therefore receive the most winner votes even when all candidates are rated poorly in absolute terms. Candidate-level three-point ratings and Best-of-4 winner analysis are kept separate for this reason. The absence of an annotator-side \emph{No acceptable candidate} choice also means Vericult's selective ranking outcomes do not have a directly matched human category.
+
+Web evidence is uneven across cultures, languages and communities. Search engines favor indexed, popular and often English-accessible material. Source classification cannot fully correct this representation bias. Provider snippets may omit surrounding context, and official or peer-reviewed evidence can still be outdated, geographically mismatched or irrelevant to an individual's situation.
+
+Vericult stores the search content actually returned by the retrieval provider rather than claiming to have downloaded and verified complete source pages. Evidence sufficiency and relevance are themselves partly model judgments. A memo labeled sufficient can still be wrong, while low evidence coverage does not imply that the candidate is culturally inappropriate. Some cultural issues are directly assessable from the prompt and response and legitimately require no retrieval.
+
+Provenance exclusions reduce benchmark contamination but cannot guarantee that unknown mirrors, quotations or derivative pages do not expose benchmark content. Candidate blindness also does not prevent the neutral verification questions themselves from revealing the cultural issue under investigation.
+
+The verifier is computationally more expensive than a single direct-judge call because each candidate can trigger multiple semantic and retrieval stages. At most three targets and two retrieval rounds bound this cost but can miss secondary cultural issues. Candidate evaluations are sequential in the reference implementation; parallelization could reduce wall time but must preserve deterministic artifact ownership and avoid local-model resource contention.
+
+The prompt-level dimension plan is shared across Best-of-4 candidates. This improves comparison consistency but can omit a concern introduced only by a candidate response. The scorer sees the full response and can account for unmet prompt requirements within planned dimensions, but it cannot add an entirely new dimension after candidate inspection without violating the shared-plan design.
+
+Deterministic response spans solve the earlier exact-copy problem but use sentence-like segmentation and therefore remain a representation choice. A material unit spanning multiple segments may be harder to capture within the target budget.
+
+Structured-output and provider failures remain possible despite bounded retries. Technical failure is intentionally reported separately rather than converted into cultural judgment. Production deployment would additionally require stronger provider failover, monitoring, artifact lifecycle management and user-facing explanation of uncertainty.
+
+\section{Threats to Validity}
+Vericult relies on the same \texttt{qwen3:4b} backbone at multiple semantic stages. Errors can propagate from context extraction to dimension planning, target selection, evidence interpretation and final scoring. Strict schemas and deterministic span ownership reduce structural errors but do not guarantee correct reasoning. Reusing one backbone controls model heterogeneity while also allowing correlated mistakes throughout the pipeline.
+
+The applicability and assessability gates add useful reject options but also create new error surfaces. A false non-applicability decision can stop a genuinely cultural task before D01--D10 planning, while a false non-assessability decision can suppress evaluation of a terse but valid answer. These gate decisions therefore require empirical auditing rather than being treated as infallible preprocessing.
+
+The candidate-blind evidence boundary is incomplete by construction. Verification questions are generated from target content before blindness begins, so semantic framing can survive in the questions even when the original candidate text is unavailable to query rewriting, retrieval and evidence synthesis. Search ranking, snippets and source availability can further influence the evidence set.
+
+Abstention reduces forced certainty but introduces a coverage trade-off. A conservative verifier may leave difficult cases unresolved; an aggressive verifier may score cases on weak support. The frozen rule forces an evidence-unresolved dimension toward abstention when all relevant retrievable targets remain insufficient and no directly assessable target exists, except that context-dependent recommendations may enter the narrowly scoped contextual fallback. Applicability, assessability, abstention and fallback decisions themselves depend on the semantic backbone and can therefore be wrong. Final analysis must report their frequencies together with agreement metrics.
+
+Most importantly, the PLT benchmark was visible during engineering and supported architecture debugging and backbone selection. Its final machine evaluation is frozen against Human Gold, but it is not a fully independent held-out test of the entire design process. This limits causal claims that design choices generalize beyond the project benchmark.
+
+The 120-item pre-freeze experiment adds breadth but does not remove the internal-validity concerns above. Its six source datasets contributed responses that had already been selected as references, preferences, chosen answers, culture-following candidates or highly rated outputs. The finding that none of the 102 substantively scored cases was labelled culturally inappropriate is therefore a positive-control consistency result, not evidence of sensitivity to culturally bad answers.
+
+The run was executed after the October 5 semantic repair whose applicability, assessability and selective-outcome behavior has now been restored into final Vericult 1.1. It is nevertheless kept separate from the frozen PLT experiment because the result export predates the definitive freeze and does not embed the exact runtime Git commit. The weak negative PRISM score correlation further cautions against interpreting the Vericult score as a calibrated human-preference score. Its value is threefold: demonstrating cross-source execution, checking coarse consistency with positive source signals, and documenting concrete failure modes that informed reliability work.
+
+Local Ollama execution improves model-version control only if the exact runtime digest is preserved. Hardware, quantization and software-version differences can affect latency and potentially output. Temperature zero reduces sampling variability but does not imply deterministic neural inference.
+
+LIVE retrieval is temporally unstable because search results and indexed content change. REPLAY mitigates this by freezing schedules and evidence snapshots and by auditing their hashes before primary evaluation. Semantic stages are nevertheless rerun during REPLAY, so exact equality of model reasoning is not guaranteed.
+
+Reproducibility therefore depends on preserving the semantic code commit, final repository snapshot, configuration/dataset hashes, exact Ollama digest, prompt/rubric hashes, raw candidates, Human Gold export, LIVE traces, evidence snapshots, baseline outputs and analysis code. The Git repository alone is insufficient if ignored runtime artifacts are lost.
